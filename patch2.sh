@@ -1,0 +1,2 @@
+sed -i 's/{onToggleEdit && (/<div className="flex items-center gap-2">\n        {isEditing && onAdd && (\n          <button onClick={onAdd} className="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 text-xs font-bold shadow-sm transition-colors">\n            + {addLabel || "إضافة"}\n          <\/button>\n        )}\n        {onToggleEdit && (/g' src/components/Dashboard.tsx
+sed -i 's/      )}/      )}\n      <\/div>/g' src/components/Dashboard.tsx
