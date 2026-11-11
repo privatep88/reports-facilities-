@@ -9,6 +9,7 @@ import {
   Sparkles,
   Recycle,
   Landmark,
+  KeyRound,
 } from "lucide-react";
 import {
   ServiceData,
@@ -18,6 +19,8 @@ import {
   SecurityData,
   TaskData,
   ChallengeData,
+  FireExtinguisherData,
+  HazardNoteData,
 } from "./types";
 
 export const initialServices: ServiceData[] = [
@@ -31,6 +34,7 @@ export const initialServices: ServiceData[] = [
   { id: "s8", name: "طلبات النظافة", icon: Sparkles, received: 22, executed: 22 },
   { id: "s9", name: "طلبات إدارة النفايات", icon: Recycle, received: 18, executed: 18 },
   { id: "s10", name: "طلبات وخدمات حكومية", icon: Landmark, received: 5, executed: 4 },
+  { id: "s11", name: "طلبات تصريح او الغاء دخول", icon: KeyRound, received: 0, executed: 0 },
 ];
 
 export const contracts: ContractData[] = [
@@ -72,3 +76,16 @@ export const challengesData: ChallengeData[] = [
   { id: 2, challenge: "-", update: "-", recommendation: "-" },
   { id: 3, challenge: "-", update: "-", recommendation: "-" },
 ];
+
+export const initialFireExtinguishers: FireExtinguisherData = {
+  active: 0,
+  inactive: 0,
+  notes: "",
+};
+
+export const initialHazardNotes: HazardNoteData = {
+  closed: 0,
+  notClosed: 0,
+  notes: "",
+};
+

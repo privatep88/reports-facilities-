@@ -9,11 +9,17 @@ import {
   securityData,
   tasksData,
   challengesData,
+  initialFireExtinguishers,
+  initialHazardNotes,
 } from "../data";
-import { ServiceData, ContractData, MaintenanceSite, LogisticsData, SecurityData, TaskData, ChallengeData } from "../types";
+import { ServiceData, ContractData, MaintenanceSite, LogisticsData, SecurityData, TaskData, ChallengeData, FireExtinguisherData, HazardNoteData } from "../types";
 // @ts-ignore
-import html2pdf from "html2pdf.js";
-import { Edit2, Printer, Save, CheckCircle, Shield, Truck, Home, Wrench, ShieldCheck, ClipboardCheck, Banknote, Trash2, Upload, Download } from "lucide-react";
+import { Edit2, Printer, Save, CheckCircle, Shield, Truck, Home, Wrench, ShieldCheck, ClipboardCheck, Banknote, Trash2, Upload, Download, FileText, FileSpreadsheet } from "lucide-react";
+import { ServicesDashboardView } from "./ServicesDashboardView";
+import { ApprovedReportsArchive } from "./ApprovedReportsArchive";
+import { ReportWorkflowToolbar } from "./ReportWorkflowToolbar";
+import { getReportWorkflowStatus } from "../lib/reportsArchive";
+import { triggerPrintReport, exportReportToPDF, exportReportToExcelXlsx } from "../lib/exportUtils";
 const defaultMaintenanceServices = { fromFacilities: 0, fromOthers: 0, costPettyCash: "-", costPurchaseOrder: "-" };
 const defaultApprovals = { preparation: { role: "ضابط أول المرافق والأصول", name: "معاذ المصعبي", date: "", signature: "" }, review: { role: "رئيس قسم إدارة المرافق", name: "فيصل سويد السليماني", date: "", signature: "" } };
 function useMonthlyState<T>(key: string, defaultValue: T, yearMonth: string) {
@@ -36,16 +42,34 @@ function useMonthlyState<T>(key: string, defaultValue: T, yearMonth: string) {
       setState(defaultValue);
     }
   }, [yearMonth, key]);
+  const isFirstRender = React.useRef(true);
+  const prevYearMonth = React.useRef(yearMonth);
   React.useEffect(() => {
     localStorage.setItem(`${key}-${yearMonth}`, JSON.stringify(state));
   }, [state, yearMonth, key]);
   return [state, setState] as const;
 }
 export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState<"report" | "services" | "approved">("report");
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const yearMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, "0")}`;
+  const [currentMonthStatus, setCurrentMonthStatus] = useState(() => getReportWorkflowStatus(yearMonth).status);
+  React.useEffect(() => {
+    setCurrentMonthStatus(getReportWorkflowStatus(yearMonth).status);
+  }, [yearMonth]);
   const [servicesRaw, setServices] = useMonthlyState<ServiceData[]>("services", initialServices, yearMonth);
+  React.useEffect(() => {
+    const existingIds = new Set(servicesRaw.map(s => s.id));
+    const missing = initialServices.filter(is => !existingIds.has(is.id));
+    if (missing.length > 0) {
+      setServices(prev => {
+        const pIds = new Set(prev.map(s => s.id));
+        const toAdd = initialServices.filter(is => !pIds.has(is.id));
+        return toAdd.length > 0 ? [...prev, ...toAdd] : prev;
+      });
+    }
+  }, [servicesRaw, setServices]);
   const services = React.useMemo(() => {
     return servicesRaw.map(s => {
       const orig = initialServices.find(is => is.id === s.id);
@@ -57,6 +81,7 @@ export default function Dashboard() {
   const [editModes, setEditModes] = useState({
     services: false,
     contracts: false,
+    fireHazards: false,
     maintenance: false,
     logistics: false,
     security: false,
@@ -64,26 +89,60 @@ export default function Dashboard() {
     challenges: false,
     approvals: false
   });
-  const handleExportPDF = () => {
+  const [showToast, setShowToast] = useState(false);
+  React.useEffect(() => {
+    let timeout: any;
+    const handleSave = () => {
+      setShowToast(true);
+      clearTimeout(timeout);
+      timeout = setTimeout(() => setShowToast(false), 2000);
+    };
+    window.addEventListener("data-saved", handleSave);
+    return () => {
+      window.removeEventListener("data-saved", handleSave);
+      clearTimeout(timeout);
+    };
+  }, []);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
+
+  const handlePrint = () => {
+    triggerPrintReport();
+  };
+
+  const handleExportPDF = async () => {
     const element = document.getElementById("dashboard-content");
     if (!element) return;
-    const width = element.scrollWidth;
-    const height = element.scrollHeight;
-    const opt = {
-      margin: 0,
-      filename: "report.pdf",
-      image: { type: "jpeg" as const, quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, windowWidth: width },
-      jsPDF: { unit: "px", format: [width, height] as [number, number], orientation: "portrait" as const }
+    const filename = `Facilities_Monthly_Report_${selectedYear}_${selectedMonth.toString().padStart(2, "0")}`;
+    setIsExportingPDF(true);
+    await exportReportToPDF(element, filename, (loading) => setIsExportingPDF(loading));
+  };
+
+  const handleExportExcel = async () => {
+    setIsExportingExcel(true);
+    const data = {
+      ...getReportSnapshotData(),
+      year: selectedYear,
+      month: selectedMonth,
+      monthName: monthsList[selectedMonth - 1],
+      isApproved: currentMonthStatus === "approved",
+      statusLabel: currentMonthStatus === "approved" ? "معتمد" : "نشط",
     };
-    html2pdf().set(opt).from(element).save();
+    await exportReportToExcelXlsx(data);
+    setIsExportingExcel(false);
   };
 
   const toggleEdit = (section: keyof typeof editModes) => {
+    if (currentMonthStatus === "approved") {
+      alert("التقرير لشهر " + monthsList[selectedMonth - 1] + " " + selectedYear + " معتمد رسمياً ومقفل للقراءة فقط.\nلإجراء تعديل، يرجى تقديم 'طلب تصحيح معتمد' من شريط مسار الاعتماد بالأعلى.");
+      return;
+    }
     setEditModes(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   const [contractsState, setContractsState] = useMonthlyState<ContractData[]>("contracts", contracts, yearMonth);
+  const [fireExtinguishers, setFireExtinguishers] = useMonthlyState<FireExtinguisherData>("fireExtinguishers", initialFireExtinguishers, yearMonth);
+  const [hazardNotes, setHazardNotes] = useMonthlyState<HazardNoteData>("hazardNotes", initialHazardNotes, yearMonth);
   const [maintenanceSitesState, setMaintenanceSitesState] = useMonthlyState<MaintenanceSite[]>("maintenanceSites", maintenanceSites, yearMonth);
   const [maintenanceServices, setMaintenanceServices] = useMonthlyState("maintenanceServices", defaultMaintenanceServices, yearMonth);
   const [logisticsState, setLogisticsState] = useMonthlyState<LogisticsData[]>("logistics", logisticsData, yearMonth);
@@ -218,6 +277,45 @@ export default function Dashboard() {
     setChallengesState((prev) => prev.filter((c) => c.id !== id));
   };
 
+  const getReportSnapshotData = () => {
+    return {
+      summary: {
+        totalReceived,
+        totalExecuted,
+        overallCompletion,
+        topServiceName: topService?.name || "",
+        topServiceReceived: topService?.received || 0,
+        totalServicesCount: services.length,
+      },
+      services: services.map(s => ({
+        id: s.id,
+        name: s.name,
+        received: s.received,
+        executed: s.executed
+      })),
+      contracts: contractsState,
+      fireExtinguishers,
+      hazardNotes,
+      maintenanceSites: maintenanceSitesState,
+      maintenanceServices,
+      logistics: computedLogisticsState,
+      security: securityState,
+      tasks: tasksState,
+      challenges: challengesState,
+      approvedBy: {
+        name: approvalsState.review.name || "فيصل سويد السليماني",
+        role: approvalsState.review.role || "رئيس قسم إدارة المرافق",
+        signature: approvalsState.review.signature || ""
+      },
+      preparedBy: {
+        name: approvalsState.preparation.name || "معاذ المصعبي",
+        role: approvalsState.preparation.role || "ضابط أول المرافق والأصول",
+        date: approvalsState.preparation.date || "",
+        signature: approvalsState.preparation.signature || ""
+      }
+    };
+  };
+
   return (
     <div id="dashboard-content" className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-20" dir="rtl">
       {/* Header */}
@@ -225,12 +323,47 @@ export default function Dashboard() {
         <div className="border-b-4 border-slate-900 flex justify-between items-end pb-4 mb-6">
           <div className="flex flex-col">
             <span className="text-slate-500 text-sm font-bold tracking-widest uppercase mb-1">إدارة الخدمات العامة</span>
-            <h1 className="text-4xl font-black text-slate-900">التقرير الشهري لقسم إدارة المرافق</h1>
+            <h1 className="text-4xl font-black text-slate-900">
+              {activeTab === "report" ? "التقرير الشهري لقسم إدارة المرافق" : activeTab === "services" ? "لوحة تحكم الخدمات" : "أرشيف التقارير المعتمدة"}
+            </h1>
+            <div className="flex flex-wrap gap-3 mt-4 print:hidden">
+               <button onClick={() => setActiveTab("report")} className={`px-4 py-2 font-bold rounded-lg transition-colors ${activeTab === "report" ? "bg-slate-900 text-white shadow-sm" : "bg-slate-200 text-slate-600 hover:bg-slate-300"}`}>التقرير الشهري</button>
+               <button onClick={() => setActiveTab("approved")} className={`px-4 py-2 font-bold rounded-lg transition-colors flex items-center gap-2 ${activeTab === "approved" ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-200 text-slate-600 hover:bg-slate-300"}`}>
+                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                 <span>التقارير المعتمدة</span>
+               </button>
+               <button onClick={() => setActiveTab("services")} className={`px-4 py-2 font-bold rounded-lg transition-colors ${activeTab === "services" ? "bg-slate-900 text-white shadow-sm" : "bg-slate-200 text-slate-600 hover:bg-slate-300"}`}>جميع الخدمات</button>
+            </div>
           </div>
           <div className="text-left flex flex-col items-end">
-            <button onClick={handleExportPDF} data-html2canvas-ignore="true" className="mb-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 print:hidden transition-colors shadow-sm">
-               <Download className="w-4 h-4"/> تصدير PDF
-            </button>
+            <div className="flex flex-wrap items-center gap-2 mb-2 print:hidden" data-html2canvas-ignore="true">
+              <button
+                onClick={handlePrint}
+                className="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+                title="طباعة التقرير الشهري A4"
+              >
+                <Printer className="w-3.5 h-3.5 text-sky-400" />
+                <span>طباعة</span>
+              </button>
+              <button
+                onClick={handleExportPDF}
+                disabled={isExportingPDF}
+                className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+                title="تصدير ملف PDF عالي الدقة مقاس A4"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>{isExportingPDF ? "جاري إنشاء PDF..." : "تصدير PDF"}</span>
+              </button>
+              <button
+                onClick={handleExportExcel}
+                disabled={isExportingExcel}
+                className="bg-teal-700 hover:bg-teal-800 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+                title="تصدير ملف Excel منسق (.xlsx)"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+                <span>{isExportingExcel ? "جاري التصدير..." : "تصدير Excel"}</span>
+              </button>
+            </div>
             <div className="flex items-center gap-2 mb-2 print:hidden">
               <select className="bg-slate-900 text-white px-2 py-1 text-sm font-bold rounded cursor-pointer" value={selectedMonth} onChange={e => setSelectedMonth(Number(e.target.value))}>
                 {monthsList.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
@@ -247,6 +380,37 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        {activeTab === "approved" ? (
+          <ApprovedReportsArchive 
+            onBackToCurrentReport={() => setActiveTab("report")}
+            onOpenReportMonth={(y, m) => {
+              setSelectedYear(y);
+              setSelectedMonth(m);
+              setActiveTab("report");
+            }}
+          />
+        ) : activeTab === "services" ? (
+          <ServicesDashboardView 
+            services={services}
+            contracts={contractsState}
+            maintenanceSites={maintenanceSitesState}
+            maintenanceServices={maintenanceServices}
+            logistics={logisticsState}
+            security={securityState}
+            tasks={tasksState}
+            challenges={challengesState}
+          />
+        ) : (
+          <>
+            <ReportWorkflowToolbar
+              yearMonth={yearMonth}
+              year={selectedYear}
+              month={selectedMonth}
+              monthName={monthsList[selectedMonth - 1]}
+              onGoToArchive={() => setActiveTab("approved")}
+              getReportSnapshotData={getReportSnapshotData}
+              onStatusChange={(status) => setCurrentMonthStatus(status)}
+            />
         {/* Executive Summary */}
         <section>
           <SectionTitle title="الملخص التنفيذي" subtitle="Executive Summary" />
@@ -428,6 +592,163 @@ export default function Dashboard() {
           </div>
         </section>
 
+        {/* Fire Extinguishers and Hazard Notes */}
+        <section>
+          <SectionTitle
+            title="الطفايات وملاحظات المخاطر"
+            subtitle="Fire Extinguishers and Hazard Notes"
+            isEditing={editModes.fireHazards}
+            onToggleEdit={() => toggleEdit('fireHazards')}
+          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            {/* بطاقة عدد الطفايات */}
+            <div className="bg-white border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+              {/* Header Bar */}
+              <div className="bg-[#C9A961] text-white py-3 px-4 flex items-center justify-center gap-2">
+                <Home className="w-5 h-5 text-white" />
+                <span className="font-bold text-base sm:text-lg">عدد الطفايات</span>
+              </div>
+              {/* Subtitle Bar */}
+              <div className="bg-white py-2 text-center border-b border-slate-100">
+                <span className="text-slate-500 text-xs sm:text-sm font-semibold tracking-wide">fire extinguishers</span>
+              </div>
+              {/* Columns: Active & Inactive */}
+              <div className="grid grid-cols-2 divide-x divide-x-reverse divide-slate-100 flex-1">
+                {/* Active Column */}
+                <div className="flex flex-col">
+                  <div className="bg-[#D1FAE5] py-2 px-3 text-center border-b border-emerald-100 flex items-center justify-center gap-2 text-[#047857] font-bold text-xs sm:text-sm">
+                    <span className="w-2 h-2 rounded-full bg-[#047857]"></span>
+                    <span>Active  ·  فعّالة</span>
+                  </div>
+                  <div className="py-6 sm:py-8 px-4 flex flex-col items-center justify-center flex-1">
+                    {editModes.fireHazards ? (
+                      <input
+                        type="number"
+                        value={fireExtinguishers.active}
+                        onChange={(e) => setFireExtinguishers(prev => ({ ...prev, active: parseInt(e.target.value) || 0 }))}
+                        className="w-24 border border-slate-300 p-1 text-center text-3xl font-black text-[#047857] bg-white"
+                      />
+                    ) : (
+                      <span className="text-4xl sm:text-5xl font-black text-[#047857] tracking-tight">{fireExtinguishers.active}</span>
+                    )}
+                    <span className="text-slate-600 text-xs sm:text-sm font-bold text-center mt-3">عدد الطفايات الفعّالة</span>
+                  </div>
+                </div>
+
+                {/* Inactive Column */}
+                <div className="flex flex-col">
+                  <div className="bg-[#FEE2E2] py-2 px-3 text-center border-b border-rose-100 flex items-center justify-center gap-2 text-[#B91C1C] font-bold text-xs sm:text-sm">
+                    <span className="w-2 h-2 rounded-full bg-[#B91C1C]"></span>
+                    <span>Inactive  ·  غير فعّالة</span>
+                  </div>
+                  <div className="py-6 sm:py-8 px-4 flex flex-col items-center justify-center flex-1">
+                    {editModes.fireHazards ? (
+                      <input
+                        type="number"
+                        value={fireExtinguishers.inactive}
+                        onChange={(e) => setFireExtinguishers(prev => ({ ...prev, inactive: parseInt(e.target.value) || 0 }))}
+                        className="w-24 border border-slate-300 p-1 text-center text-3xl font-black text-[#B91C1C] bg-white"
+                      />
+                    ) : (
+                      <span className="text-4xl sm:text-5xl font-black text-[#B91C1C] tracking-tight">{fireExtinguishers.inactive}</span>
+                    )}
+                    <span className="text-slate-600 text-xs sm:text-sm font-bold text-center mt-3">عدد الطفايات غير الفعّالة</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes Footer */}
+              <div className="bg-[#F3F4F6] border-t border-slate-200 py-2.5 px-4 flex items-center justify-between">
+                <span className="text-slate-900 font-black text-sm">الملاحظات</span>
+                {editModes.fireHazards ? (
+                  <input
+                    type="text"
+                    placeholder="أدخل الملاحظات هنا..."
+                    value={fireExtinguishers.notes}
+                    onChange={(e) => setFireExtinguishers(prev => ({ ...prev, notes: e.target.value }))}
+                    className="border border-slate-300 px-2 py-1 text-xs bg-white text-slate-800 rounded w-2/3"
+                  />
+                ) : (
+                  <span className="text-slate-600 text-xs font-bold">{fireExtinguishers.notes}</span>
+                )}
+              </div>
+            </div>
+
+            {/* بطاقة عدد ملاحظات المخاطر */}
+            <div className="bg-white border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+              {/* Header Bar */}
+              <div className="bg-[#0E7490] text-white py-3 px-4 flex items-center justify-center gap-2">
+                <FileText className="w-5 h-5 text-white" />
+                <span className="font-bold text-base sm:text-lg">عدد ملاحظات المخاطر</span>
+              </div>
+              {/* Subtitle Bar */}
+              <div className="bg-white py-2 text-center border-b border-slate-100">
+                <span className="text-slate-500 text-xs sm:text-sm font-semibold tracking-wide">risk observations</span>
+              </div>
+              {/* Columns: Closed & Not closed */}
+              <div className="grid grid-cols-2 divide-x divide-x-reverse divide-slate-100 flex-1">
+                {/* Closed Column */}
+                <div className="flex flex-col">
+                  <div className="bg-[#D1FAE5] py-2 px-3 text-center border-b border-emerald-100 flex items-center justify-center gap-2 text-[#047857] font-bold text-xs sm:text-sm">
+                    <span className="w-2 h-2 rounded-full bg-[#047857]"></span>
+                    <span>Closed  ·  مغلقة</span>
+                  </div>
+                  <div className="py-6 sm:py-8 px-4 flex flex-col items-center justify-center flex-1">
+                    {editModes.fireHazards ? (
+                      <input
+                        type="number"
+                        value={hazardNotes.closed}
+                        onChange={(e) => setHazardNotes(prev => ({ ...prev, closed: parseInt(e.target.value) || 0 }))}
+                        className="w-24 border border-slate-300 p-1 text-center text-3xl font-black text-[#047857] bg-white"
+                      />
+                    ) : (
+                      <span className="text-4xl sm:text-5xl font-black text-[#047857] tracking-tight">{hazardNotes.closed}</span>
+                    )}
+                    <span className="text-slate-600 text-xs sm:text-sm font-bold text-center mt-3">عدد المخاطر المغلقة</span>
+                  </div>
+                </div>
+
+                {/* Not Closed Column */}
+                <div className="flex flex-col">
+                  <div className="bg-[#FEE2E2] py-2 px-3 text-center border-b border-rose-100 flex items-center justify-center gap-2 text-[#B91C1C] font-bold text-xs sm:text-sm">
+                    <span className="w-2 h-2 rounded-full bg-[#B91C1C]"></span>
+                    <span>Not closed  ·  غير مغلقة</span>
+                  </div>
+                  <div className="py-6 sm:py-8 px-4 flex flex-col items-center justify-center flex-1">
+                    {editModes.fireHazards ? (
+                      <input
+                        type="number"
+                        value={hazardNotes.notClosed}
+                        onChange={(e) => setHazardNotes(prev => ({ ...prev, notClosed: parseInt(e.target.value) || 0 }))}
+                        className="w-24 border border-slate-300 p-1 text-center text-3xl font-black text-[#B91C1C] bg-white"
+                      />
+                    ) : (
+                      <span className="text-4xl sm:text-5xl font-black text-[#B91C1C] tracking-tight">{hazardNotes.notClosed}</span>
+                    )}
+                    <span className="text-slate-600 text-xs sm:text-sm font-bold text-center mt-3">عدد المخاطر الغير مغلقة</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes Footer */}
+              <div className="bg-[#F3F4F6] border-t border-slate-200 py-2.5 px-4 flex items-center justify-between">
+                <span className="text-slate-900 font-black text-sm">الملاحظات</span>
+                {editModes.fireHazards ? (
+                  <input
+                    type="text"
+                    placeholder="أدخل الملاحظات هنا..."
+                    value={hazardNotes.notes}
+                    onChange={(e) => setHazardNotes(prev => ({ ...prev, notes: e.target.value }))}
+                    className="border border-slate-300 px-2 py-1 text-xs bg-white text-slate-800 rounded w-2/3"
+                  />
+                ) : (
+                  <span className="text-slate-600 text-xs font-bold">{hazardNotes.notes}</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Maintenance Details */}
         <section>
           <SectionTitle title="تفاصيل الصيانة" subtitle="Maintenance Details" isEditing={editModes.maintenance} onToggleEdit={() => toggleEdit("maintenance")} onAdd={addMaintenanceSite} addLabel="إضافة موقع / صيانة" />
@@ -604,8 +925,8 @@ export default function Dashboard() {
         <section>
           <div className="flex justify-between items-end border-b-2 border-slate-200 pb-2 mb-4 mt-8">
              <div className="flex items-center gap-4">
-               <h3 className="text-lg font-black text-slate-900">المهام والتحديات</h3>
-               <span className="text-xs uppercase tracking-widest font-bold text-slate-400">Tasks & Challenges</span>
+               <h3 className="text-lg font-black text-slate-900">المهام الأخرى</h3>
+               <span className="text-xs uppercase tracking-widest font-bold text-slate-400">Other Tasks</span>
              </div>
              <div className="flex items-center gap-2">
                {editModes.tasks && (
@@ -817,6 +1138,15 @@ export default function Dashboard() {
            </div>
         </section>
 
+        {/* Toast Notification */}
+        <div
+          className={`fixed bottom-6 right-6 md:right-auto md:left-6 z-50 flex items-center gap-2 bg-slate-900 text-white px-4 py-3 rounded shadow-lg transition-all duration-300 print:hidden ${showToast ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none"}`}
+        >
+          <CheckCircle className="w-5 h-5 text-emerald-400" />
+          <span className="font-bold text-sm">تم حفظ التغييرات بنجاح</span>
+        </div>
+          </>
+        )}
       </main>
     </div>
   );

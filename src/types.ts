@@ -69,3 +69,81 @@ export interface ChallengeData {
   update: string;
   recommendation: string;
 }
+
+export interface FireExtinguisherData {
+  active: number;
+  inactive: number;
+  notes: string;
+}
+
+export interface HazardNoteData {
+  closed: number;
+  notClosed: number;
+  notes: string;
+}
+
+export type ReportStatus = "draft" | "ready_for_review" | "in_review" | "approved" | "archived";
+
+export interface ReportAuditEntry {
+  id: string;
+  action: "create" | "submit_review" | "review" | "approve" | "return_for_edit" | "request_correction" | "archive";
+  actionLabel: string;
+  performedBy: string;
+  role?: string;
+  timestamp: string;
+  notes?: string;
+}
+
+export interface ApprovedReportSnapshot {
+  id: string;
+  yearMonth: string;
+  year: number;
+  month: number;
+  monthName: string;
+  version: number;
+  status: ReportStatus;
+  approvedAt: string;
+  approvedBy: {
+    name: string;
+    role: string;
+    signature?: string;
+  };
+  preparedBy: {
+    name: string;
+    role: string;
+    date?: string;
+    signature?: string;
+  };
+  summary: {
+    totalReceived: number;
+    totalExecuted: number;
+    overallCompletion: number;
+    topServiceName?: string;
+    topServiceReceived?: number;
+    totalServicesCount: number;
+  };
+  services: Array<{
+    id: string;
+    name: string;
+    received: number;
+    executed: number;
+  }>;
+  contracts: ContractData[];
+  fireExtinguishers: FireExtinguisherData;
+  hazardNotes: HazardNoteData;
+  maintenanceSites: MaintenanceSite[];
+  maintenanceServices: {
+    fromFacilities: number;
+    fromOthers: number;
+    costPettyCash: string | number;
+    costPurchaseOrder: string | number;
+  };
+  logistics: LogisticsData[];
+  security: SecurityData[];
+  tasks: TaskData[];
+  challenges: ChallengeData[];
+  auditTrail: ReportAuditEntry[];
+  correctionReason?: string;
+  isSuperseded?: boolean;
+  supersededBy?: string;
+}

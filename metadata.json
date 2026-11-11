@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "نظام التقرير الشهري لقسم إدارة المرافق",
+  "description": "نظام مؤسسي متكامل للتقرير الشهري لقسم إدارة المرافق مع أرشيف التقارير المعتمدة ومسار الاعتماد والأرشفة الرقمية.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
