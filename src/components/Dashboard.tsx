@@ -14,12 +14,71 @@ import {
 } from "../data";
 import { ServiceData, ContractData, MaintenanceSite, LogisticsData, SecurityData, TaskData, ChallengeData, FireExtinguisherData, HazardNoteData } from "../types";
 // @ts-ignore
-import { Edit2, Printer, Save, CheckCircle, Shield, Truck, Home, Wrench, ShieldCheck, ClipboardCheck, Banknote, Trash2, Upload, Download, FileText, FileSpreadsheet } from "lucide-react";
+import {
+  Edit2,
+  Printer,
+  Save,
+  CheckCircle,
+  Shield,
+  Truck,
+  Home,
+  Wrench,
+  ShieldCheck,
+  ClipboardCheck,
+  Banknote,
+  Trash2,
+  Upload,
+  Download,
+  FileText,
+  FileSpreadsheet,
+  FileBarChart,
+  ChartNoAxesCombined,
+  Target,
+  ClipboardList,
+  Layers,
+  ChartPie,
+  ListChecks,
+  FileCheck,
+  FireExtinguisher,
+  Settings,
+  ShieldAlert,
+  Lightbulb,
+  BadgeCheck,
+  Building2,
+  Clock,
+  AlertTriangle,
+  RefreshCw,
+} from "lucide-react";
 import { ServicesDashboardView } from "./ServicesDashboardView";
 import { ApprovedReportsArchive } from "./ApprovedReportsArchive";
 import { ReportWorkflowToolbar } from "./ReportWorkflowToolbar";
 import { getReportWorkflowStatus } from "../lib/reportsArchive";
 import { triggerPrintReport, exportReportToPDF, exportReportToExcelXlsx } from "../lib/exportUtils";
+import facilitiesHeaderBanner from "../assets/images/facilities_header_banner_1794420194595.jpg";
+import maintenanceEngineeringBg from "../assets/images/maintenance_engineering_bg_1794420296200.jpg";
+import logisticsOperationsBg from "../assets/images/logistics_operations_bg_1794420296712.jpg";
+import securityReceptionBg from "../assets/images/security_reception_bg_1794420297527.jpg";
+import maintenanceTechImg from "../assets/images/maintenance_tech_and_cctv_1794421479968.jpg";
+import securityCctvImg from "../assets/images/security_cctv_camera_1794421481408.jpg";
+import officialApprovalStampImg from "../assets/images/official_approval_stamp_1794421481291.jpg";
+
+function getServiceIconColor(id: string): string {
+  switch (id) {
+    case "s1": return "text-[#2563EB]";
+    case "s2": return "text-[#10B981]";
+    case "s3": return "text-[#F59E0B]";
+    case "s4": return "text-[#F59E0B]";
+    case "s5": return "text-[#06B6D4]";
+    case "s6": return "text-[#8B5CF6]";
+    case "s7": return "text-[#EF4444]";
+    case "s8": return "text-[#10B981]";
+    case "s9": return "text-[#059669]";
+    case "s10": return "text-[#173B65]";
+    case "s11": return "text-[#D4A447]";
+    default: return "text-[#2563EB]";
+  }
+}
+
 const defaultMaintenanceServices = { fromFacilities: 0, fromOthers: 0, costPettyCash: "-", costPurchaseOrder: "-" };
 const defaultApprovals = { preparation: { role: "ضابط أول المرافق والأصول", name: "معاذ المصعبي", date: "", signature: "" }, review: { role: "رئيس قسم إدارة المرافق", name: "فيصل سويد السليماني", date: "", signature: "" } };
 function useMonthlyState<T>(key: string, defaultValue: T, yearMonth: string) {
@@ -218,7 +277,7 @@ export default function Dashboard() {
     setEditModes(prev => ({ ...prev, services: true }));
   };
 
-  const updateContract = (index: number, field: "active" | "inactive", value: number) => {
+  const updateContract = (index: number, field: "active" | "inactive" | "notes", value: number | string) => {
     setContractsState((prev) => prev.map((c, i) => (i === index ? { ...c, [field]: value } : c)));
   };
 
@@ -317,32 +376,54 @@ export default function Dashboard() {
   };
 
   return (
-    <div id="dashboard-content" className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-20" dir="rtl">
+    <div id="dashboard-content" className="min-h-screen bg-[#F7F9FC] text-slate-800 font-sans pb-20" dir="rtl">
       {/* Header */}
       <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        <div className="border-b-4 border-slate-900 flex justify-between items-end pb-4 mb-6">
-          <div className="flex flex-col">
-            <span className="text-slate-500 text-sm font-bold tracking-widest uppercase mb-1">إدارة الخدمات العامة</span>
-            <h1 className="text-4xl font-black text-slate-900">
-              {activeTab === "report" ? "التقرير الشهري لقسم إدارة المرافق" : activeTab === "services" ? "لوحة تحكم الخدمات" : "أرشيف التقارير المعتمدة"}
+        <div className="relative overflow-hidden border-b-4 border-[#142A45] flex justify-between items-end pb-4 mb-6">
+          {/* Subtle Panoramic Facilities Background Layer (Excluded from Print & PDF) */}
+          <div className="absolute inset-0 pointer-events-none z-0 print:hidden" data-html2canvas-ignore="true">
+            <img src={facilitiesHeaderBanner} alt="" className="w-full h-full object-cover object-center opacity-[0.22]" />
+            <div className="absolute inset-0 bg-gradient-to-l from-[#F7F9FC]/95 via-[#F7F9FC]/85 to-[#173B65]/15" />
+            <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-l from-[#142A45] via-[#2563EB] to-[#D4A447] opacity-80" />
+          </div>
+
+          <div className="relative z-10 flex flex-col">
+            <span className="text-slate-500 text-sm font-bold tracking-widest uppercase mb-1 flex items-center gap-1.5">
+              <Building2 className="w-4 h-4 text-[#D4A447]" />
+              <span>إدارة الخدمات العامة</span>
+              <span className="hidden sm:inline-flex items-center gap-1.5 mr-2 px-2 py-0.5 rounded bg-[#142A45]/5 border border-[#142A45]/10 text-[11px] text-[#173B65] print:hidden" data-html2canvas-ignore="true">
+                <Wrench className="w-3 h-3 text-[#2563EB]" />
+                <Truck className="w-3 h-3 text-[#06B6D4]" />
+                <ShieldCheck className="w-3 h-3 text-[#10B981]" />
+              </span>
+            </span>
+            <h1 className="text-4xl font-black text-[#142A45] flex items-center gap-3">
+              <FileBarChart className="w-8 h-8 text-[#2563EB] shrink-0" />
+              <span>{activeTab === "report" ? "التقرير الشهري لقسم إدارة المرافق" : activeTab === "services" ? "لوحة تحكم الخدمات" : "أرشيف التقارير المعتمدة"}</span>
             </h1>
             <div className="flex flex-wrap gap-3 mt-4 print:hidden">
-               <button onClick={() => setActiveTab("report")} className={`px-4 py-2 font-bold rounded-lg transition-colors ${activeTab === "report" ? "bg-slate-900 text-white shadow-sm" : "bg-slate-200 text-slate-600 hover:bg-slate-300"}`}>التقرير الشهري</button>
+               <button onClick={() => setActiveTab("report")} className={`px-4 py-2 font-bold rounded-lg transition-colors flex items-center gap-2 ${activeTab === "report" ? "bg-[#142A45] text-white shadow-sm" : "bg-slate-200 text-slate-600 hover:bg-slate-300"}`}>
+                 <FileBarChart className={`w-4 h-4 ${activeTab === "report" ? "text-[#38BDF8]" : "text-[#2563EB]"}`} />
+                 <span>التقرير الشهري</span>
+               </button>
                <button onClick={() => setActiveTab("approved")} className={`px-4 py-2 font-bold rounded-lg transition-colors flex items-center gap-2 ${activeTab === "approved" ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-200 text-slate-600 hover:bg-slate-300"}`}>
                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
                  <span>التقارير المعتمدة</span>
                </button>
-               <button onClick={() => setActiveTab("services")} className={`px-4 py-2 font-bold rounded-lg transition-colors ${activeTab === "services" ? "bg-slate-900 text-white shadow-sm" : "bg-slate-200 text-slate-600 hover:bg-slate-300"}`}>جميع الخدمات</button>
+               <button onClick={() => setActiveTab("services")} className={`px-4 py-2 font-bold rounded-lg transition-colors flex items-center gap-2 ${activeTab === "services" ? "bg-[#142A45] text-white shadow-sm" : "bg-slate-200 text-slate-600 hover:bg-slate-300"}`}>
+                 <Layers className="w-4 h-4 text-[#D4A447]" />
+                 <span>جميع الخدمات</span>
+               </button>
             </div>
           </div>
-          <div className="text-left flex flex-col items-end">
+          <div className="relative z-10 text-left flex flex-col items-end">
             <div className="flex flex-wrap items-center gap-2 mb-2 print:hidden" data-html2canvas-ignore="true">
               <button
                 onClick={handlePrint}
-                className="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+                className="bg-[#142A45] hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
                 title="طباعة التقرير الشهري A4"
               >
-                <Printer className="w-3.5 h-3.5 text-sky-400" />
+                <Printer className="w-3.5 h-3.5 text-[#38BDF8]" />
                 <span>طباعة</span>
               </button>
               <button
@@ -365,14 +446,14 @@ export default function Dashboard() {
               </button>
             </div>
             <div className="flex items-center gap-2 mb-2 print:hidden">
-              <select className="bg-slate-900 text-white px-2 py-1 text-sm font-bold rounded cursor-pointer" value={selectedMonth} onChange={e => setSelectedMonth(Number(e.target.value))}>
+              <select className="bg-[#142A45] text-white px-2 py-1 text-sm font-bold rounded cursor-pointer" value={selectedMonth} onChange={e => setSelectedMonth(Number(e.target.value))}>
                 {monthsList.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
               </select>
-              <select className="bg-slate-900 text-white px-2 py-1 text-sm font-bold rounded cursor-pointer" value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))}>
+              <select className="bg-[#142A45] text-white px-2 py-1 text-sm font-bold rounded cursor-pointer" value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))}>
                 {yearsList.map(y => <option key={y} value={y}>{y}</option>)}
               </select>
             </div>
-            <div className="hidden print:block bg-slate-900 text-white px-4 py-1 text-sm font-bold mb-2">
+            <div className="hidden print:block bg-[#142A45] text-white px-4 py-1 text-sm font-bold mb-2">
                {monthsList[selectedMonth - 1]} {selectedYear}
             </div>
           </div>
@@ -413,20 +494,23 @@ export default function Dashboard() {
             />
         {/* Executive Summary */}
         <section>
-          <SectionTitle title="الملخص التنفيذي" subtitle="Executive Summary" />
+          <SectionTitle title="الملخص التنفيذي" subtitle="Executive Summary" icon={<ChartNoAxesCombined className="w-5 h-5 text-[#142A45]" />} />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-4">
-            <SummaryCard title="نسبة الإنجاز الكلية" subtitle="Overall Completion" value={`${overallCompletion.toFixed(1)}%`} icon={<CheckCircle className="w-6 h-6 text-emerald-500" />} borderColor="border-emerald-500" fillWidth={`${overallCompletion}%`} />
-            <SummaryCard title="إجمالي الخدمات" subtitle="Total Services" value={services.length} icon={<ClipboardCheck className="w-6 h-6 text-blue-500" />} borderColor="border-blue-500" fillWidth="100%" />
-            <SummaryCard title="أعلى خدمة طلباً" subtitle="Top Service Demand" value={topService?.received || 0} icon={<span className="text-2xl text-amber-500">🏆</span>} borderColor="border-amber-500" fillWidth="100%" />
-            <SummaryCard title="إجمالي الطلبات" subtitle="Total Requests" value={totalReceived} icon={<ShieldCheck className="w-6 h-6 text-slate-900" />} borderColor="border-slate-900" fillWidth="100%" />
+            <SummaryCard title="نسبة الإنجاز الكلية" subtitle="Overall Completion" value={`${overallCompletion.toFixed(1)}%`} icon={<Target className="w-6 h-6 text-[#10B981]" />} borderColor="border-[#10B981]" fillWidth={`${overallCompletion}%`} />
+            <SummaryCard title="إجمالي الخدمات" subtitle="Total Services" value={services.length} icon={<Layers className="w-6 h-6 text-[#2563EB]" />} borderColor="border-[#2563EB]" fillWidth="100%" />
+            <SummaryCard title="أعلى خدمة طلباً" subtitle="Top Service Demand" value={topService?.received || 0} icon={<span className="text-2xl text-[#F59E0B]">🏆</span>} borderColor="border-[#F59E0B]" fillWidth="100%" />
+            <SummaryCard title="إجمالي الطلبات" subtitle="Total Requests" value={totalReceived} icon={<ClipboardList className="w-6 h-6 text-[#2563EB]" />} borderColor="border-[#173B65]" fillWidth="100%" />
           </div>
         </section>
 
         {/* Performance Overview */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white border border-slate-200 shadow-sm flex flex-col">
-            <div className="bg-slate-900 text-white px-4 py-3 font-bold text-sm flex justify-between">
-              <span>الطلبات حسب الخدمة</span>
+            <div className="bg-[#142A45] text-white px-4 py-3 font-bold text-sm flex justify-between items-center">
+              <span className="flex items-center gap-2">
+                <FileBarChart className="w-4 h-4 text-[#06B6D4]" />
+                <span>الطلبات حسب الخدمة</span>
+              </span>
               <span className="text-slate-400 text-xs tracking-widest uppercase">Requests by Service</span>
             </div>
             <div className="p-4">
@@ -442,22 +526,22 @@ export default function Dashboard() {
                   {sortedServices.map((s) => (
                     <tr key={s.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
                       <td className="py-3 flex items-center gap-2">
-                        <s.icon className="w-4 h-4 text-slate-400" />
+                        <s.icon className={cn("w-4 h-4", getServiceIconColor(s.id))} />
                         <span className="font-bold text-slate-700">{s.name}</span>
                       </td>
                       <td className="py-3 w-1/2 px-4">
-                        <div className="h-2 bg-slate-100 w-full relative">
+                        <div className="h-2 bg-slate-100 w-full relative rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${totalReceived > 0 ? (s.received / totalReceived) * 100 : 0}%` }}
-                            className="absolute top-0 bottom-0 right-0 bg-slate-900"
+                            className="absolute top-0 bottom-0 right-0 bg-gradient-to-l from-[#2563EB] to-[#06B6D4] rounded-full"
                           />
                         </div>
                       </td>
-                      <td className="py-3 text-center font-bold text-slate-900">{s.received}</td>
+                      <td className="py-3 text-center font-bold text-[#142A45]">{s.received}</td>
                     </tr>
                   ))}
-                  <tr className="bg-slate-100 border-t border-slate-200 text-slate-900 font-bold">
+                  <tr className="bg-slate-100 border-t border-slate-200 text-[#142A45] font-bold">
                     <td colSpan={2} className="py-3 px-4">الإجمالي · Total</td>
                     <td className="py-3 text-center">{totalReceived}</td>
                   </tr>
@@ -465,13 +549,22 @@ export default function Dashboard() {
               </table>
             </div>
           </div>
-          <div className="bg-white border border-slate-200 shadow-sm flex flex-col">
-            <div className="bg-slate-900 text-white px-4 py-3 font-bold text-sm flex justify-between">
-              <span>توزيع الأداء</span>
+          <div className="bg-white border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+            <div className="bg-[#142A45] text-white px-4 py-3 font-bold text-sm flex justify-between items-center">
+              <span className="flex items-center gap-2">
+                <ChartPie className="w-4 h-4 text-[#10B981]" />
+                <span>توزيع الأداء</span>
+              </span>
               <span className="text-slate-400 text-xs tracking-widest uppercase">Performance Distribution</span>
             </div>
             <div className="p-4 flex-1 flex flex-col items-center justify-center relative min-h-[300px]">
-               <CustomDonutChart percentage={overallCompletion} />
+               <div className="absolute inset-x-0 bottom-0 h-20 pointer-events-none z-0 print:hidden" data-html2canvas-ignore="true">
+                 <img src={facilitiesHeaderBanner} alt="" className="w-full h-full object-cover object-bottom opacity-[0.16]" />
+                 <div className="absolute inset-0 bg-gradient-to-b from-white via-white/75 to-transparent" />
+               </div>
+               <div className="relative z-10 flex items-center justify-center">
+                 <CustomDonutChart percentage={overallCompletion} />
+               </div>
             </div>
           </div>
         </section>
@@ -480,7 +573,10 @@ export default function Dashboard() {
         <section>
            <div className="flex justify-between items-end border-b-2 border-slate-200 pb-2 mb-4">
              <div className="flex items-center gap-4">
-               <h3 className="text-lg font-black text-slate-900">ملخص الخدمات</h3>
+               <h3 className="text-lg font-black text-[#142A45] flex items-center gap-2">
+                 <ListChecks className="w-5 h-5 text-[#2563EB]" />
+                 <span>ملخص الخدمات</span>
+               </h3>
                <span className="text-xs uppercase tracking-widest font-bold text-slate-400">Services Summary</span>
              </div>
 
@@ -492,7 +588,7 @@ export default function Dashboard() {
                )}
                <button
                  onClick={() => toggleEdit("services")}
-                 className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-3 py-1 font-bold text-xs transition-colors shadow-sm"
+                 className="flex items-center gap-2 bg-[#142A45] hover:bg-slate-800 text-white px-3 py-1 font-bold text-xs transition-colors shadow-sm"
                >
                  {editModes.services ? <Save className="w-3 h-3" /> : <Edit2 className="w-3 h-3" />}
                  {editModes.services ? "حفظ التعديلات" : "تعديل البيانات"}
@@ -503,7 +599,7 @@ export default function Dashboard() {
            <div className="bg-white border border-slate-200 shadow-sm overflow-x-auto">
              <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-slate-50 border-b-2 border-slate-900 text-slate-900">
+                  <tr className="bg-slate-50 border-b-2 border-[#142A45] text-[#142A45]">
                     <th className="py-3 px-4 text-right font-bold">#</th>
                     <th className="py-3 px-4 text-right font-bold">الخدمة</th>
                     <th className="py-3 px-4 text-center font-bold">المستلمة</th>
@@ -517,7 +613,7 @@ export default function Dashboard() {
                   {services.map((s, idx) => {
                     const ratio = s.received === 0 ? 0 : (s.executed / s.received) * 100;
                     const level = ratio >= 95 ? "مرتفع" : ratio >= 85 ? "متوسط" : "منخفض";
-                    const levelColor = ratio >= 95 ? "text-emerald-600" : ratio >= 85 ? "text-amber-500" : "text-rose-500";
+                    const levelColor = ratio >= 95 ? "text-[#10B981]" : ratio >= 85 ? "text-[#F59E0B]" : "text-[#EF4444]";
                     const bgClass = ratio < 85 ? "bg-rose-50/30" : "";
                     
                     return (
@@ -525,7 +621,7 @@ export default function Dashboard() {
                         <td className="py-3 px-4 text-slate-500 font-bold">{idx + 1}</td>
                         <td className="py-3 px-4 font-bold">
                           <div className="flex items-center gap-2">
-                            <s.icon className="w-4 h-4 text-slate-400" />
+                            <s.icon className={cn("w-4 h-4", getServiceIconColor(s.id))} />
                             {editModes.services ? (
                               <input
                                 type="text"
@@ -557,7 +653,7 @@ export default function Dashboard() {
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${Math.min(ratio, 100)}%` }}
-                              className={cn("absolute top-0 bottom-0 right-0", ratio >= 95 ? "bg-emerald-500" : ratio >= 85 ? "bg-amber-500" : "bg-rose-500")}
+                              className={cn("absolute top-0 bottom-0 right-0", ratio >= 95 ? "bg-[#10B981]" : ratio >= 85 ? "bg-[#F59E0B]" : "bg-[#EF4444]")}
                             />
                           </div>
                         </td>
@@ -569,7 +665,7 @@ export default function Dashboard() {
                       </tr>
                     );
                   })}
-                  <tr className="bg-slate-900 text-white font-bold">
+                  <tr className="bg-[#142A45] text-white font-bold">
                     <td colSpan={2} className="py-4 px-4 text-center">الإجمالي · Total</td>
                     <td className="py-4 px-4 text-center">{totalReceived}</td>
                     <td className="py-4 px-4 text-center">{totalExecuted}</td>
@@ -584,11 +680,11 @@ export default function Dashboard() {
 
         {/* Contracts & Licenses */}
         <section>
-          <SectionTitle title="العقود والرخص" subtitle="Contracts & Licenses" isEditing={editModes.contracts} onToggleEdit={() => toggleEdit('contracts')} />
+          <SectionTitle title="العقود والرخص" subtitle="Contracts & Licenses" icon={<FileCheck className="w-5 h-5 text-[#2563EB]" />} isEditing={editModes.contracts} onToggleEdit={() => toggleEdit('contracts')} />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-             <ContractBlock title="العقود الإيجارية" subtitle="Rental Contracts" data={contractsState[0]} borderColor="border-emerald-500" textColor="text-emerald-600" icon={<Home className="w-5 h-5 opacity-70" />} isEditing={editModes.contracts} onChange={(f, v) => updateContract(0, f, v)} />
-             <ContractBlock title="الرخص التجارية" subtitle="Commercial Licenses" data={contractsState[1]} borderColor="border-blue-500" textColor="text-blue-600" icon={<ClipboardCheck className="w-5 h-5 opacity-70" />} isEditing={editModes.contracts} onChange={(f, v) => updateContract(1, f, v)} />
-             <ContractBlock title="عقود الخدمات" subtitle="Service Contracts" data={contractsState[2]} borderColor="border-slate-900" textColor="text-slate-900" icon={<Shield className="w-5 h-5 opacity-70" />} isEditing={editModes.contracts} onChange={(f, v) => updateContract(2, f, v)} />
+             <ContractBlock title="العقود الإيجارية" subtitle="Rental Contracts" data={contractsState[0]} borderColor="border-[#2563EB]" textColor="text-[#10B981]" icon={<Home className="w-5 h-5 text-[#2563EB]" />} isEditing={editModes.contracts} onChange={(f, v) => updateContract(0, f, v)} />
+             <ContractBlock title="الرخص التجارية" subtitle="Commercial Licenses" data={contractsState[1]} borderColor="border-[#06B6D4]" textColor="text-[#10B981]" icon={<ClipboardCheck className="w-5 h-5 text-[#06B6D4]" />} isEditing={editModes.contracts} onChange={(f, v) => updateContract(1, f, v)} />
+             <ContractBlock title="عقود الخدمات" subtitle="Service Contracts" data={contractsState[2]} borderColor="border-[#D4A447]" textColor="text-[#10B981]" icon={<Shield className="w-5 h-5 text-[#D4A447]" />} isEditing={editModes.contracts} onChange={(f, v) => updateContract(2, f, v)} />
           </div>
         </section>
 
@@ -597,6 +693,7 @@ export default function Dashboard() {
           <SectionTitle
             title="الطفايات وملاحظات المخاطر"
             subtitle="Fire Extinguishers and Hazard Notes"
+            icon={<FireExtinguisher className="w-5 h-5 text-[#EF4444]" />}
             isEditing={editModes.fireHazards}
             onToggleEdit={() => toggleEdit('fireHazards')}
           />
@@ -605,7 +702,7 @@ export default function Dashboard() {
             <div className="bg-white border border-slate-200 shadow-sm flex flex-col overflow-hidden">
               {/* Header Bar */}
               <div className="bg-[#C9A961] text-white py-3 px-4 flex items-center justify-center gap-2">
-                <Home className="w-5 h-5 text-white" />
+                <FireExtinguisher className="w-5 h-5 text-white" />
                 <span className="font-bold text-base sm:text-lg">عدد الطفايات</span>
               </div>
               {/* Subtitle Bar */}
@@ -678,7 +775,7 @@ export default function Dashboard() {
             <div className="bg-white border border-slate-200 shadow-sm flex flex-col overflow-hidden">
               {/* Header Bar */}
               <div className="bg-[#0E7490] text-white py-3 px-4 flex items-center justify-center gap-2">
-                <FileText className="w-5 h-5 text-white" />
+                <ShieldAlert className="w-5 h-5 text-white" />
                 <span className="font-bold text-base sm:text-lg">عدد ملاحظات المخاطر</span>
               </div>
               {/* Subtitle Bar */}
@@ -751,11 +848,14 @@ export default function Dashboard() {
 
         {/* Maintenance Details */}
         <section>
-          <SectionTitle title="تفاصيل الصيانة" subtitle="Maintenance Details" isEditing={editModes.maintenance} onToggleEdit={() => toggleEdit("maintenance")} onAdd={addMaintenanceSite} addLabel="إضافة موقع / صيانة" />
-          <div className="bg-white border border-slate-200 shadow-sm overflow-x-auto mt-4">
-             <table className="w-full text-sm text-center">
+          <SectionTitle title="تفاصيل الصيانة" subtitle="Maintenance Details" icon={<Wrench className="w-5 h-5 text-[#2563EB]" />} visualImage={maintenanceTechImg} isEditing={editModes.maintenance} onToggleEdit={() => toggleEdit("maintenance")} onAdd={addMaintenanceSite} addLabel="إضافة موقع / صيانة" />
+          <div className="relative bg-white border border-slate-200 shadow-sm overflow-x-auto mt-4">
+             <div className="absolute inset-0 pointer-events-none z-0 print:hidden" data-html2canvas-ignore="true">
+               <img src={maintenanceEngineeringBg} alt="" className="w-full h-full object-cover opacity-[0.035]" />
+             </div>
+             <table className="relative z-10 w-full text-sm text-center">
                 <thead>
-                  <tr className="bg-slate-900 text-white">
+                  <tr className="bg-[#142A45] text-white">
                     <th className="py-3 px-2 font-bold">م</th>
                     <th className="py-3 px-2 font-bold text-right">المقرات</th>
                     <th className="py-3 px-2 font-bold whitespace-nowrap">أعطال عامة</th>
@@ -775,7 +875,7 @@ export default function Dashboard() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-600">
                   {maintenanceSitesState.map((site) => (
-                    <tr key={site.id} className="hover:bg-slate-50">
+                    <tr key={site.id} className="hover:bg-slate-50/80">
                       <td className="py-3 px-2 font-bold">{site.id}</td>
                       <td className="py-3 px-2 text-right font-bold text-slate-800"><EditableCell isEditing={editModes.maintenance} value={site.name} onChange={(v) => updateMaintenanceSite(site.id, 'name', v)} /></td>
                       <td className="py-3 px-2"><EditableCell isEditing={editModes.maintenance} value={site.general} onChange={(v) => updateMaintenanceSite(site.id, 'general', v)} /></td>
@@ -805,29 +905,41 @@ export default function Dashboard() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-             <div className="bg-white border border-slate-200 shadow-sm flex flex-col">
-                <div className="bg-slate-900 text-white px-4 py-3 font-bold text-sm flex justify-between">
-                  <span>التكلفة المالية</span>
+             <div className="relative overflow-hidden bg-white border border-slate-200 shadow-sm flex flex-col">
+                <div className="absolute inset-0 pointer-events-none z-0 print:hidden" data-html2canvas-ignore="true">
+                  <img src={maintenanceEngineeringBg} alt="" className="w-full h-full object-cover opacity-[0.04]" />
+                </div>
+                <div className="relative z-10 bg-[#142A45] text-white px-4 py-3 font-bold text-sm flex justify-between items-center">
+                  <span className="flex items-center gap-2">
+                    <Banknote className="w-4 h-4 text-[#D4A447]" />
+                    <span>التكلفة المالية</span>
+                  </span>
                   <span className="text-slate-400 text-xs tracking-widest uppercase">Financial Cost</span>
                 </div>
-                <table className="w-full text-sm">
+                <table className="relative z-10 w-full text-sm">
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr><th className="py-2 text-right px-4 font-bold w-12">م</th><th className="py-2 text-right px-4 font-bold">الوصف</th><th className="py-2 text-center px-4 font-bold w-32">المبلغ</th></tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b border-slate-100"><td className="py-3 px-4 font-bold text-slate-500">1</td><td className="py-3 px-4 font-bold text-slate-800 flex items-center gap-2"><Banknote className="w-4 h-4 text-emerald-500"/> التكلفة / النثرية</td><td className="py-3 text-center px-4 font-bold text-slate-900"><EditableCell isEditing={editModes.maintenance} value={maintenanceServices.costPettyCash} onChange={(v) => setMaintenanceServices(p => ({ ...p, costPettyCash: String(v) }))} /></td></tr>
-                    <tr className="border-b border-slate-100"><td className="py-3 px-4 font-bold text-slate-500">2</td><td className="py-3 px-4 font-bold text-slate-800 flex items-center gap-2"><ClipboardCheck className="w-4 h-4 text-blue-500"/> التكلفة / أمر شراء</td><td className="py-3 text-center px-4 font-bold text-slate-900"><EditableCell isEditing={editModes.maintenance} value={maintenanceServices.costPurchaseOrder} onChange={(v) => setMaintenanceServices(p => ({ ...p, costPurchaseOrder: String(v) }))} /></td></tr>
+                    <tr className="border-b border-slate-100"><td className="py-3 px-4 font-bold text-slate-500">1</td><td className="py-3 px-4 font-bold text-slate-800 flex items-center gap-2"><Banknote className="w-4 h-4 text-[#10B981]"/> التكلفة / النثرية</td><td className="py-3 text-center px-4 font-bold text-slate-900"><EditableCell isEditing={editModes.maintenance} value={maintenanceServices.costPettyCash} onChange={(v) => setMaintenanceServices(p => ({ ...p, costPettyCash: String(v) }))} /></td></tr>
+                    <tr className="border-b border-slate-100"><td className="py-3 px-4 font-bold text-slate-500">2</td><td className="py-3 px-4 font-bold text-slate-800 flex items-center gap-2"><ClipboardCheck className="w-4 h-4 text-[#2563EB]"/> التكلفة / أمر شراء</td><td className="py-3 text-center px-4 font-bold text-slate-900"><EditableCell isEditing={editModes.maintenance} value={maintenanceServices.costPurchaseOrder} onChange={(v) => setMaintenanceServices(p => ({ ...p, costPurchaseOrder: String(v) }))} /></td></tr>
                     <tr className="bg-slate-100 text-slate-900 font-bold border-t border-slate-200"><td colSpan={3} className="py-3 px-4 text-transparent select-none">-</td></tr>
                   </tbody>
                 </table>
              </div>
              
-             <div className="bg-white border border-slate-200 shadow-sm flex flex-col">
-                <div className="bg-slate-900 text-white px-4 py-3 font-bold text-sm flex justify-between">
-                  <span>خدمات الصيانة</span>
+              <div className="relative overflow-hidden bg-white border border-slate-200 shadow-sm flex flex-col">
+                <div className="absolute inset-0 pointer-events-none z-0 print:hidden" data-html2canvas-ignore="true">
+                  <img src={maintenanceTechImg} alt="" className="w-full h-full object-cover opacity-[0.045]" />
+                </div>
+                <div className="relative z-10 bg-[#142A45] text-white px-4 py-3 font-bold text-sm flex justify-between items-center">
+                  <span className="flex items-center gap-2">
+                    <Wrench className="w-4 h-4 text-[#38BDF8]" />
+                    <span>خدمات الصيانة</span>
+                  </span>
                   <span className="text-slate-400 text-xs tracking-widest uppercase">Maintenance Services</span>
                 </div>
-                <table className="w-full text-sm">
+                <table className="relative z-10 w-full text-sm">
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr><th className="py-2 text-right px-4 font-bold">م</th><th className="py-2 text-right px-4 font-bold">الوصف</th><th className="py-2 text-center px-4 font-bold">عدد الأعطال</th></tr>
                   </thead>
@@ -845,11 +957,14 @@ export default function Dashboard() {
 
         {/* Logistics */}
         <section>
-          <SectionTitle title="الدعم اللوجستي" subtitle="Logistics" isEditing={editModes.logistics} onToggleEdit={() => toggleEdit("logistics")} />
-          <div className="bg-white border border-slate-200 shadow-sm overflow-hidden mt-4">
-            <table className="w-full text-sm text-center">
+          <SectionTitle title="الدعم اللوجستي" subtitle="Logistics" icon={<Truck className="w-5 h-5 text-[#06B6D4]" />} visualImage={logisticsOperationsBg} isEditing={editModes.logistics} onToggleEdit={() => toggleEdit("logistics")} />
+          <div className="relative bg-white border border-slate-200 shadow-sm overflow-hidden mt-4">
+            <div className="absolute inset-0 pointer-events-none z-0 print:hidden" data-html2canvas-ignore="true">
+              <img src={logisticsOperationsBg} alt="" className="w-full h-full object-cover opacity-[0.045]" />
+            </div>
+            <table className="relative z-10 w-full text-sm text-center">
                <thead>
-                  <tr className="bg-slate-900 text-white border-b-2 border-slate-900">
+                  <tr className="bg-[#142A45] text-white border-b-2 border-[#142A45]">
                     <th className="py-3 px-4 font-bold text-right">م</th>
                     <th className="py-3 px-4 font-bold text-right">البيان</th>
                     <th className="py-3 px-4 font-bold">الإجمالي</th>
@@ -866,13 +981,16 @@ export default function Dashboard() {
                     return (
                     <tr key={row.id}>
                        <td className="py-3 px-4 text-right text-slate-500 font-bold">{row.id}</td>
-                       <td className="py-3 px-4 text-right font-bold text-slate-800">{row.label}</td>
+                       <td className="py-3 px-4 text-right font-bold text-slate-800 flex items-center gap-2">
+                         {isPercentageRow ? <ChartPie className="w-4 h-4 text-[#10B981]" /> : <Truck className="w-4 h-4 text-[#06B6D4]" />}
+                         <span>{row.label}</span>
+                       </td>
                        <td className="py-3 px-4 font-black">{row.total}</td>
-                       <td className={cn("py-3 px-4 font-bold", row.isPercentage && "text-emerald-600")}><EditableCell type={isPercentageRow ? "text" : "number"} isEditing={editModes.logistics && !isPercentageRow} value={row.rep as string} onChange={(v) => updateLogistics(row.id, 'rep', v)} /></td>
-                       <td className={cn("py-3 px-4 font-bold", row.isPercentage && "text-emerald-600")}><EditableCell type={isPercentageRow ? "text" : "number"} isEditing={editModes.logistics && !isPercentageRow} value={row.emiratesPost as string} onChange={(v) => updateLogistics(row.id, 'emiratesPost', v)} /></td>
-                       <td className={cn("py-3 px-4 font-bold", row.isPercentage && "text-emerald-600")}><EditableCell type={isPercentageRow ? "text" : "number"} isEditing={editModes.logistics && !isPercentageRow} value={row.aramex as string} onChange={(v) => updateLogistics(row.id, 'aramex', v)} /></td>
-                       <td className={cn("py-3 px-4 font-bold", row.isPercentage && "text-emerald-600")}><EditableCell type={isPercentageRow ? "text" : "number"} isEditing={editModes.logistics && !isPercentageRow} value={row.distribution as string} onChange={(v) => updateLogistics(row.id, 'distribution', v)} /></td>
-                       <td className={cn("py-3 px-4 font-bold", row.isPercentage && "text-emerald-600")}><EditableCell type={isPercentageRow ? "text" : "number"} isEditing={editModes.logistics && !isPercentageRow} value={row.other as string} onChange={(v) => updateLogistics(row.id, 'other', v)} /></td>
+                       <td className={cn("py-3 px-4 font-bold", row.isPercentage && "text-[#10B981]")}><EditableCell type={isPercentageRow ? "text" : "number"} isEditing={editModes.logistics && !isPercentageRow} value={row.rep as string} onChange={(v) => updateLogistics(row.id, 'rep', v)} /></td>
+                       <td className={cn("py-3 px-4 font-bold", row.isPercentage && "text-[#10B981]")}><EditableCell type={isPercentageRow ? "text" : "number"} isEditing={editModes.logistics && !isPercentageRow} value={row.emiratesPost as string} onChange={(v) => updateLogistics(row.id, 'emiratesPost', v)} /></td>
+                       <td className={cn("py-3 px-4 font-bold", row.isPercentage && "text-[#10B981]")}><EditableCell type={isPercentageRow ? "text" : "number"} isEditing={editModes.logistics && !isPercentageRow} value={row.aramex as string} onChange={(v) => updateLogistics(row.id, 'aramex', v)} /></td>
+                       <td className={cn("py-3 px-4 font-bold", row.isPercentage && "text-[#10B981]")}><EditableCell type={isPercentageRow ? "text" : "number"} isEditing={editModes.logistics && !isPercentageRow} value={row.distribution as string} onChange={(v) => updateLogistics(row.id, 'distribution', v)} /></td>
+                       <td className={cn("py-3 px-4 font-bold", row.isPercentage && "text-[#10B981]")}><EditableCell type={isPercentageRow ? "text" : "number"} isEditing={editModes.logistics && !isPercentageRow} value={row.other as string} onChange={(v) => updateLogistics(row.id, 'other', v)} /></td>
                     </tr>
                     );
                   })}
@@ -883,11 +1001,14 @@ export default function Dashboard() {
 
         {/* Security & Reception */}
         <section>
-          <SectionTitle title="خدمات الأمن والاستقبال" subtitle="Security & Reception" isEditing={editModes.security} onToggleEdit={() => toggleEdit("security")} />
-          <div className="bg-white border border-slate-200 shadow-sm overflow-x-auto mt-4">
-             <table className="w-full text-sm text-center">
+          <SectionTitle title="خدمات الأمن والاستقبال" subtitle="Security & Reception" icon={<ShieldCheck className="w-5 h-5 text-[#8B5CF6]" />} visualImage={securityCctvImg} isEditing={editModes.security} onToggleEdit={() => toggleEdit("security")} />
+          <div className="relative bg-white border border-slate-200 shadow-sm overflow-x-auto mt-4">
+             <div className="absolute inset-0 pointer-events-none z-0 print:hidden" data-html2canvas-ignore="true">
+               <img src={securityCctvImg} alt="" className="w-full h-full object-cover opacity-[0.045]" />
+             </div>
+             <table className="relative z-10 w-full text-sm text-center">
                <thead>
-                  <tr className="bg-slate-900 text-white border-b-2 border-slate-900">
+                  <tr className="bg-[#142A45] text-white border-b-2 border-[#142A45]">
                     <th className="py-3 px-4 font-bold text-right">م</th>
                     <th className="py-3 px-4 font-bold text-right">البيان</th>
                     <th className="py-3 px-4 font-bold">تفعيل البطاقات</th>
@@ -904,7 +1025,7 @@ export default function Dashboard() {
                     <tr key={row.id}>
                        <td className="py-3 px-4 text-right text-slate-500 font-bold">{row.id}</td>
                        <td className="py-3 px-4 text-right font-bold text-slate-800 flex items-center gap-2">
-                         {row.id === 1 ? <Shield className="w-4 h-4 text-slate-400" /> : <CheckCircle className="w-4 h-4 text-emerald-500" />}
+                         {row.id === 1 ? <Shield className="w-4 h-4 text-[#8B5CF6]" /> : <CheckCircle className="w-4 h-4 text-[#10B981]" />}
                          {row.label}
                        </td>
                        <td className="py-3 px-4 font-bold"><EditableCell isEditing={editModes.security} value={row.cards as string} onChange={(v) => updateSecurity(row.id, 'cards', v)} /></td>
@@ -925,7 +1046,10 @@ export default function Dashboard() {
         <section>
           <div className="flex justify-between items-end border-b-2 border-slate-200 pb-2 mb-4 mt-8">
              <div className="flex items-center gap-4">
-               <h3 className="text-lg font-black text-slate-900">المهام الأخرى</h3>
+               <h3 className="text-lg font-black text-[#142A45] flex items-center gap-2">
+                 <Target className="w-5 h-5 text-[#10B981]" />
+                 <span>المهام الأخرى</span>
+               </h3>
                <span className="text-xs uppercase tracking-widest font-bold text-slate-400">Other Tasks</span>
              </div>
              <div className="flex items-center gap-2">
@@ -936,7 +1060,7 @@ export default function Dashboard() {
                )}
                <button
                  onClick={() => toggleEdit('tasks')}
-                 className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-3 py-1 font-bold text-xs transition-colors shadow-sm"
+                 className="flex items-center gap-2 bg-[#142A45] hover:bg-slate-800 text-white px-3 py-1 font-bold text-xs transition-colors shadow-sm"
                >
                  {editModes.tasks ? <Save className="w-3 h-3" /> : <Edit2 className="w-3 h-3" />}
                  {editModes.tasks ? "حفظ التعديلات" : "تعديل البيانات"}
@@ -946,7 +1070,7 @@ export default function Dashboard() {
           <div className="bg-white border border-slate-200 shadow-sm overflow-hidden mt-4">
             <table className="w-full text-sm">
                <thead>
-                  <tr className="bg-slate-900 text-white">
+                  <tr className="bg-[#142A45] text-white">
                     <th className="py-3 px-4 font-bold text-right">#</th>
                     <th className="py-3 px-4 font-bold text-right">الموضوع</th>
                     <th className="py-3 px-4 font-bold text-right w-1/3">المهمة</th>
@@ -977,25 +1101,26 @@ export default function Dashboard() {
                            <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold border", 
                               task.status === 'مكتمل' ? "text-emerald-700 bg-emerald-50 border-emerald-200" :
                               task.status === 'متأخرة' ? "text-rose-700 bg-rose-50 border-rose-200" :
-                              "text-blue-700 bg-blue-50 border-blue-200"
+                              "text-amber-700 bg-amber-50 border-amber-200"
                            )}
                             >
-                             <span className={cn("w-1.5 h-1.5", 
-                               task.status === 'مكتمل' ? "bg-emerald-500" :
-                               task.status === 'متأخرة' ? "bg-rose-500" :
-                               "bg-blue-500"
+                             {task.status === 'مكتمل' ? (
+                               <CheckCircle className="w-3.5 h-3.5 text-[#10B981]" />
+                             ) : task.status === 'متأخرة' ? (
+                               <AlertTriangle className="w-3.5 h-3.5 text-[#EF4444]" />
+                             ) : (
+                               <Clock className="w-3.5 h-3.5 text-[#F59E0B]" />
                              )}
-                              ></span>
                              {task.status}
                            </span>
                          )}
                        </td>
                        <td className="py-3 px-4">
                           <div className="h-2 w-full bg-slate-100 overflow-hidden relative">
-                             <div className="h-full bg-emerald-500 absolute top-0 right-0 transition-all duration-500" style={{ width: `${task.completion}%` }}></div>
+                             <div className="h-full bg-[#10B981] absolute top-0 right-0 transition-all duration-500" style={{ width: `${task.completion}%` }}></div>
                           </div>
                        </td>
-                       <td className="py-3 px-4 text-center text-emerald-600 font-black"><EditableCell type="number" isEditing={editModes.tasks} value={task.completion} onChange={(v) => updateTask(task.id, 'completion', Number(v))} className="max-w-[60px] mx-auto" />{editModes.tasks ? '' : '%'}</td>
+                       <td className="py-3 px-4 text-center text-[#10B981] font-black"><EditableCell type="number" isEditing={editModes.tasks} value={task.completion} onChange={(v) => updateTask(task.id, 'completion', Number(v))} className="max-w-[60px] mx-auto" />{editModes.tasks ? '' : '%'}</td>
                        {editModes.tasks && (
                          <td className="py-3 px-4 text-center">
                            <button onClick={() => deleteTask(task.id)} className="text-rose-500 hover:text-rose-700 p-1">
@@ -1014,7 +1139,10 @@ export default function Dashboard() {
         <section>
           <div className="flex justify-between items-end border-b-2 border-slate-200 pb-2 mb-4 mt-8">
              <div className="flex items-center gap-4">
-               <h3 className="text-lg font-black text-slate-900">التحديات والتوصيات</h3>
+               <h3 className="text-lg font-black text-[#142A45] flex items-center gap-2">
+                 <Lightbulb className="w-5 h-5 text-[#D4A447]" />
+                 <span>التحديات والتوصيات</span>
+               </h3>
                <span className="text-xs uppercase tracking-widest font-bold text-slate-400">Challenges & Recommendations</span>
              </div>
              <div className="flex items-center gap-2">
@@ -1025,7 +1153,7 @@ export default function Dashboard() {
                )}
                <button
                  onClick={() => toggleEdit('challenges')}
-                 className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-3 py-1 font-bold text-xs transition-colors shadow-sm"
+                 className="flex items-center gap-2 bg-[#142A45] hover:bg-slate-800 text-white px-3 py-1 font-bold text-xs transition-colors shadow-sm"
                >
                  {editModes.challenges ? <Save className="w-3 h-3" /> : <Edit2 className="w-3 h-3" />}
                  {editModes.challenges ? "حفظ التعديلات" : "تعديل البيانات"}
@@ -1035,11 +1163,26 @@ export default function Dashboard() {
           <div className="bg-white border border-slate-200 shadow-sm overflow-hidden mt-4">
             <table className="w-full text-sm">
                <thead>
-                  <tr className="bg-slate-900 text-white">
+                  <tr className="bg-[#142A45] text-white">
                     <th className="py-3 px-4 font-bold text-right">#</th>
-                    <th className="py-3 px-4 font-bold text-right w-1/3">التحديات والعوائق</th>
-                    <th className="py-3 px-4 font-bold text-right w-1/3">التحديث</th>
-                    <th className="py-3 px-4 font-bold text-right w-1/3">التوصية</th>
+                    <th className="py-3 px-4 font-bold text-right w-1/3">
+                      <span className="inline-flex items-center gap-1.5">
+                        <AlertTriangle className="w-4 h-4 text-[#EF4444]" />
+                        <span>التحديات والعوائق</span>
+                      </span>
+                    </th>
+                    <th className="py-3 px-4 font-bold text-right w-1/3">
+                      <span className="inline-flex items-center gap-1.5">
+                        <RefreshCw className="w-4 h-4 text-[#06B6D4]" />
+                        <span>التحديث</span>
+                      </span>
+                    </th>
+                    <th className="py-3 px-4 font-bold text-right w-1/3">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Lightbulb className="w-4 h-4 text-[#D4A447]" />
+                        <span>التوصية</span>
+                      </span>
+                    </th>
                     {editModes.challenges && <th className="py-3 px-4 font-bold text-center">إجراء</th>}
                   </tr>
                 </thead>
@@ -1066,19 +1209,22 @@ export default function Dashboard() {
 
         {/* Approval Sign-off */}
         <section className="pb-12">
-           <SectionTitle title="الاعتماد" subtitle="Approval & Sign-off" isEditing={editModes.approvals} onToggleEdit={() => toggleEdit("approvals")} />
+           <SectionTitle title="الاعتماد" subtitle="Approval & Sign-off" icon={<BadgeCheck className="w-5 h-5 text-[#B91C1C]" />} visualImage={currentMonthStatus === "approved" ? officialApprovalStampImg : undefined} isEditing={editModes.approvals} onToggleEdit={() => toggleEdit("approvals")} />
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 text-sm">
              <div className="bg-white border border-slate-200 p-6 shadow-sm relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-1 h-full bg-emerald-500"></div>
-               <div className="flex justify-between items-center border-b border-slate-200 pb-4 mb-4">
-                 <span className="font-bold text-slate-900">الإعداد <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px] ml-2">Preparation</span></span>
-                 <Edit2 className="w-4 h-4 text-slate-400" />
+               <div className="absolute top-0 right-0 w-1 h-full bg-[#10B981]"></div>
+               <div className="absolute bottom-2 left-4 pointer-events-none opacity-[0.05] print:hidden" data-html2canvas-ignore="true">
+                 <FileCheck className="w-28 h-28 text-[#10B981]" />
                </div>
-               <div className="space-y-4">
+               <div className="relative z-10 flex justify-between items-center border-b border-slate-200 pb-4 mb-4">
+                 <span className="font-bold text-[#142A45]">الإعداد <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px] ml-2">Preparation</span></span>
+                 <Edit2 className="w-4 h-4 text-[#10B981]" />
+               </div>
+               <div className="relative z-10 space-y-4">
                  <p className="font-bold text-slate-600 mb-6 text-center text-lg"><EditableCell isEditing={editModes.approvals} value={approvalsState.preparation.role} onChange={(v) => setApprovalsState(s => ({...s, preparation: {...s.preparation, role: v as string}}))} className="text-center" /></p>
                  <div className="flex gap-4 items-center">
                    <span className="font-bold w-16 text-slate-500">الاسم:</span>
-                   <span className="font-black text-slate-900 border-b border-slate-200 flex-1 pb-1">
+                   <span className="font-black text-[#142A45] border-b border-slate-200 flex-1 pb-1">
                      <EditableCell isEditing={editModes.approvals} value={approvalsState.preparation.name} onChange={(v) => setApprovalsState(s => ({...s, preparation: {...s.preparation, name: v as string}}))} />
                    </span>
                  </div>
@@ -1098,16 +1244,29 @@ export default function Dashboard() {
              </div>
              
              <div className="bg-white border border-slate-200 p-6 shadow-sm relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-1 h-full bg-slate-900"></div>
-               <div className="flex justify-between items-center border-b border-slate-200 pb-4 mb-4">
-                 <span className="font-bold text-slate-900">المراجعة والاعتماد <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px] ml-2">Review & Approval</span></span>
-                 <CheckCircle className="w-4 h-4 text-slate-400" />
+               <div className="absolute top-0 right-0 w-1 h-full bg-[#142A45]"></div>
+               {currentMonthStatus === "approved" && (
+                 <div className="absolute inset-0 pointer-events-none z-0 print:hidden" data-html2canvas-ignore="true">
+                   <img src={officialApprovalStampImg} alt="" className="w-full h-full object-cover opacity-[0.045]" />
+                 </div>
+               )}
+               <div className="absolute bottom-2 left-4 pointer-events-none opacity-[0.05] print:hidden" data-html2canvas-ignore="true">
+                 <BadgeCheck className="w-28 h-28 text-[#B91C1C]" />
                </div>
-               <div className="space-y-4">
+               <div className="relative z-10 flex justify-between items-center border-b border-slate-200 pb-4 mb-4">
+                 <span className="font-bold text-[#142A45]">المراجعة والاعتماد <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px] ml-2">Review & Approval</span></span>
+                 <div className="flex items-center gap-2">
+                   {currentMonthStatus === "approved" && (
+                     <img src={officialApprovalStampImg} alt="" className="w-8 h-6 object-cover rounded border border-slate-200 shadow-xs print:hidden" data-html2canvas-ignore="true" />
+                   )}
+                   <BadgeCheck className="w-5 h-5 text-[#B91C1C]" />
+                 </div>
+               </div>
+               <div className="relative z-10 space-y-4">
                  <p className="font-bold text-slate-600 mb-6 text-center text-lg"><EditableCell isEditing={editModes.approvals} value={approvalsState.review.role} onChange={(v) => setApprovalsState(s => ({...s, review: {...s.review, role: v as string}}))} className="text-center" /></p>
                  <div className="flex gap-4 items-center">
                    <span className="font-bold w-16 text-slate-500">الاسم:</span>
-                   <span className="font-black text-slate-900 border-b border-slate-200 flex-1 pb-1">
+                   <span className="font-black text-[#142A45] border-b border-slate-200 flex-1 pb-1">
                      <EditableCell isEditing={editModes.approvals} value={approvalsState.review.name} onChange={(v) => setApprovalsState(s => ({...s, review: {...s.review, name: v as string}}))} />
                    </span>
                  </div>
@@ -1127,7 +1286,7 @@ export default function Dashboard() {
              </div>
            </div>
            
-           <div className="bg-slate-900 text-white text-center py-4 mt-6 font-bold text-sm shadow-sm flex flex-col md:flex-row items-center justify-center gap-4">
+           <div className="bg-[#142A45] text-white text-center py-4 mt-6 font-bold text-sm shadow-sm flex flex-col md:flex-row items-center justify-center gap-4">
               <span className="text-slate-300">هذا التقرير معتمد ومراجع وفقاً للسياسات والإجراءات المعمول بها في قسم إدارة المرافق</span>
               <span className="hidden md:inline text-slate-600">|</span>
               <div className="flex items-center gap-2">
@@ -1140,7 +1299,7 @@ export default function Dashboard() {
 
         {/* Toast Notification */}
         <div
-          className={`fixed bottom-6 right-6 md:right-auto md:left-6 z-50 flex items-center gap-2 bg-slate-900 text-white px-4 py-3 rounded shadow-lg transition-all duration-300 print:hidden ${showToast ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none"}`}
+          className={`fixed bottom-6 right-6 md:right-auto md:left-6 z-50 flex items-center gap-2 bg-[#142A45] text-white px-4 py-3 rounded shadow-lg transition-all duration-300 print:hidden ${showToast ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none"}`}
         >
           <CheckCircle className="w-5 h-5 text-emerald-400" />
           <span className="font-bold text-sm">تم حفظ التغييرات بنجاح</span>
@@ -1154,12 +1313,20 @@ export default function Dashboard() {
 
 // ----------------- SUB COMPONENTS -----------------
 
-function SectionTitle({ title, subtitle, isEditing, onToggleEdit, onAdd, addLabel }: { title: string; subtitle: string; isEditing?: boolean; onToggleEdit?: () => void; onAdd?: () => void; addLabel?: string }) {
+function SectionTitle({ title, subtitle, icon, visualImage, isEditing, onToggleEdit, onAdd, addLabel }: { title: string; subtitle: string; icon?: React.ReactNode; visualImage?: string; isEditing?: boolean; onToggleEdit?: () => void; onAdd?: () => void; addLabel?: string }) {
   return (
     <div className="flex justify-between items-end border-b-2 border-slate-200 pb-2 mb-4">
       <div className="flex items-center gap-4">
-        <h3 className="text-lg font-black text-slate-900">{title}</h3>
+        <h3 className="text-lg font-black text-[#142A45] flex items-center gap-2">
+          {icon}
+          <span>{title}</span>
+        </h3>
         <span className="text-xs uppercase tracking-widest font-bold text-slate-400">{subtitle}</span>
+        {visualImage && (
+          <div className="hidden sm:flex items-center h-7 w-14 rounded overflow-hidden border border-slate-200 shadow-xs print:hidden" data-html2canvas-ignore="true">
+            <img src={visualImage} alt="" className="w-full h-full object-cover" />
+          </div>
+        )}
       </div>
       <div className="flex items-center gap-2">
         {isEditing && onAdd && (
@@ -1170,7 +1337,7 @@ function SectionTitle({ title, subtitle, isEditing, onToggleEdit, onAdd, addLabe
         {onToggleEdit && (
           <button
             onClick={onToggleEdit}
-            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-3 py-1 font-bold text-xs transition-colors shadow-sm"
+            className="flex items-center gap-2 bg-[#142A45] hover:bg-slate-800 text-white px-3 py-1 font-bold text-xs transition-colors shadow-sm"
           >
             {isEditing ? <Save className="w-3 h-3" /> : <Edit2 className="w-3 h-3" />}
             {isEditing ? "حفظ التعديلات" : "تعديل البيانات"}
@@ -1184,19 +1351,22 @@ function SectionTitle({ title, subtitle, isEditing, onToggleEdit, onAdd, addLabe
 
 function SummaryCard({ title, subtitle, value, icon, borderColor, fillWidth }: { title: string; subtitle: string; value: React.ReactNode; icon: React.ReactNode; borderColor: string; fillWidth: string }) {
   return (
-    <div className={cn("bg-white border-r-4 p-4 shadow-sm flex flex-col justify-between min-h-[140px]", borderColor)}>
-      <div className="flex justify-between items-start">
+    <div className={cn("relative overflow-hidden bg-white border-r-4 p-4 shadow-sm flex flex-col justify-between min-h-[140px]", borderColor)}>
+      <div className="absolute bottom-3 left-3 opacity-[0.05] scale-[2.2] pointer-events-none print:hidden" data-html2canvas-ignore="true">
+        {icon}
+      </div>
+      <div className="relative z-10 flex justify-between items-start">
         <div className="flex flex-col">
           <span className="text-slate-500 text-xs font-bold">{title}</span>
         </div>
-        <div className="text-slate-300">
+        <div className="bg-slate-50/90 border border-slate-100 p-1.5 rounded-lg shadow-2xs">
            {icon}
         </div>
       </div>
-      <div className="mt-2 flex items-baseline justify-between">
-        <span className="text-4xl font-black text-slate-900">{value}</span>
+      <div className="relative z-10 mt-2 flex items-baseline justify-between">
+        <span className="text-4xl font-black text-[#142A45]">{value}</span>
       </div>
-      <div className="w-full bg-slate-100 h-1.5 mt-3">
+      <div className="relative z-10 w-full bg-slate-100 h-1.5 mt-3">
         <div className={cn("h-full", borderColor.replace('border-', 'bg-').replace('border-r', 'bg'))} style={{ width: fillWidth }}></div>
       </div>
     </div>
@@ -1241,36 +1411,51 @@ function CustomDonutChart({ percentage }: { percentage: number }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="text-3xl font-black text-slate-900"
+            className="text-3xl font-black text-[#142A45]"
          >
            {percentage.toFixed(0)}%
          </motion.span>
       </div>
       {/* Legend */}
-      <div className="absolute -bottom-8 flex items-center gap-2">
-         <div className="w-3 h-3 bg-emerald-500"></div>
-         <span className="text-xs font-bold text-slate-500 tracking-widest uppercase">منجز</span>
+      <div className="absolute -bottom-8 flex items-center gap-4 whitespace-nowrap">
+         <div className="flex items-center gap-1.5">
+           <div className="w-3 h-3 rounded-xs bg-[#10B981]"></div>
+           <span className="text-xs font-bold text-slate-600">منجز</span>
+         </div>
+         <div className="flex items-center gap-1.5">
+           <div className="w-3 h-3 rounded-xs bg-[#F59E0B]"></div>
+           <span className="text-xs font-bold text-slate-500">قيد التنفيذ</span>
+         </div>
+         <div className="flex items-center gap-1.5">
+           <div className="w-3 h-3 rounded-xs bg-[#EF4444]"></div>
+           <span className="text-xs font-bold text-slate-500">متأخر</span>
+         </div>
       </div>
     </div>
   );
 }
 
-function ContractBlock({ title, subtitle, data, borderColor, textColor, icon, isEditing, onChange }: { title: string; subtitle: string; data: ContractData; borderColor: string; textColor: string; icon: React.ReactNode; isEditing?: boolean; onChange?: (field: "active" | "inactive", val: number) => void }) {
+function ContractBlock({ title, subtitle, data, borderColor, textColor, icon, isEditing, onChange }: { title: string; subtitle: string; data: ContractData; borderColor: string; textColor: string; icon: React.ReactNode; isEditing?: boolean; onChange?: (field: "active" | "inactive" | "notes", val: any) => void }) {
+  if (!data) return null;
   return (
-    <div className={cn("bg-white flex flex-col border-r-4 shadow-sm p-4 border border-slate-200", borderColor)}>
-      <div className="flex justify-between items-start mb-4">
+    <div className={cn("bg-white flex flex-col border-r-4 shadow-sm border border-slate-200 overflow-hidden", borderColor)}>
+      <div className="relative p-4 flex-1 flex flex-col bg-gradient-to-br from-white via-white to-slate-50/60">
+      <div className="absolute bottom-3 left-4 opacity-[0.05] scale-[2.4] pointer-events-none print:hidden" data-html2canvas-ignore="true">
+        {icon}
+      </div>
+      <div className="relative z-10 flex justify-between items-start mb-4">
         <div className="flex flex-col">
-          <span className="text-slate-900 text-sm font-bold">{title}</span>
+          <span className="text-[#142A45] text-sm font-bold">{title}</span>
           <span className="text-slate-400 text-[10px] tracking-widest uppercase">{subtitle}</span>
         </div>
-        <div className="text-slate-300">
+        <div className="bg-slate-50 border border-slate-100 p-1.5 rounded-lg">
            {icon}
         </div>
       </div>
-      <div className="grid grid-cols-2 mt-2 gap-4">
+      <div className="relative z-10 grid grid-cols-2 mt-2 gap-4">
         <div className="flex flex-col">
           <div className="flex items-center gap-1.5 mb-1">
-             <span className={cn("w-2 h-2", borderColor.replace('border-', 'bg-').replace('border-r', 'bg'))}></span>
+             <span className="w-2 h-2 rounded-full bg-[#10B981]"></span>
              <span className={cn("text-xs font-bold", textColor)}>فعّالة</span>
           </div>
           {isEditing && onChange ? (
@@ -1281,15 +1466,32 @@ function ContractBlock({ title, subtitle, data, borderColor, textColor, icon, is
         </div>
         <div className="flex flex-col">
            <div className="flex items-center gap-1.5 mb-1">
-             <span className="w-2 h-2 bg-slate-300"></span>
-             <span className="text-xs font-bold text-slate-500">غير فعّالة</span>
+             <span className="w-2 h-2 rounded-full bg-[#EF4444]"></span>
+             <span className="text-xs font-bold text-[#EF4444]">غير فعّالة</span>
           </div>
           {isEditing && onChange ? (
-             <input type="number" value={data.inactive} onChange={(e) => onChange("inactive", parseInt(e.target.value) || 0)} className="w-full border border-slate-300 p-1 text-xl font-black bg-white mt-1 text-slate-500" />
+             <input type="number" value={data.inactive} onChange={(e) => onChange("inactive", parseInt(e.target.value) || 0)} className="w-full border border-slate-300 p-1 text-xl font-black bg-white mt-1 text-[#EF4444]" />
           ) : (
-             <span className="text-3xl font-black text-slate-500">{data.inactive}</span>
+             <span className="text-3xl font-black text-[#EF4444]">{data.inactive}</span>
           )}
         </div>
+      </div>
+      </div>
+
+      {/* Notes Footer */}
+      <div className="bg-[#F3F4F6] border-t border-slate-200 py-2.5 px-4 flex items-center justify-between">
+        <span className="text-slate-900 font-black text-sm">الملاحظات</span>
+        {isEditing && onChange ? (
+          <input
+            type="text"
+            placeholder="أدخل الملاحظات هنا..."
+            value={data.notes || ""}
+            onChange={(e) => onChange("notes", e.target.value)}
+            className="border border-slate-300 px-2 py-1 text-xs bg-white text-slate-800 rounded w-2/3"
+          />
+        ) : (
+          <span className="text-slate-600 text-xs font-bold">{data.notes}</span>
+        )}
       </div>
     </div>
   );

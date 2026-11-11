@@ -246,18 +246,26 @@ export function ApprovedReportPreviewModal({ report, onClose, onOpenAuditTrail }
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {report.contracts?.map((c, idx) => (
-                <div key={idx} className="bg-white border border-slate-200 p-4 shadow-sm border-r-4 border-slate-800">
-                  <span className="block font-bold text-sm text-slate-900 mb-2">{c.type}</span>
-                  <div className="grid grid-cols-2 gap-2 text-center">
-                    <div className="bg-emerald-50 p-2 rounded">
-                      <span className="text-[11px] font-bold text-emerald-700 block">فعّالة</span>
-                      <span className="text-xl font-black text-emerald-800">{c.active}</span>
-                    </div>
-                    <div className="bg-slate-100 p-2 rounded">
-                      <span className="text-[11px] font-bold text-slate-600 block">غير فعّالة</span>
-                      <span className="text-xl font-black text-slate-700">{c.inactive}</span>
+                <div key={idx} className="bg-white border border-slate-200 p-4 shadow-sm border-r-4 border-slate-800 flex flex-col justify-between">
+                  <div>
+                    <span className="block font-bold text-sm text-slate-900 mb-2">{c.type}</span>
+                    <div className="grid grid-cols-2 gap-2 text-center">
+                      <div className="bg-emerald-50 p-2 rounded">
+                        <span className="text-[11px] font-bold text-emerald-700 block">فعّالة</span>
+                        <span className="text-xl font-black text-emerald-800">{c.active}</span>
+                      </div>
+                      <div className="bg-slate-100 p-2 rounded">
+                        <span className="text-[11px] font-bold text-slate-600 block">غير فعّالة</span>
+                        <span className="text-xl font-black text-slate-700">{c.inactive}</span>
+                      </div>
                     </div>
                   </div>
+                  {c.notes && (
+                    <div className="bg-slate-50 border-t border-slate-200 -mx-4 -mb-4 mt-3 px-4 py-2 text-xs font-bold text-slate-700 flex justify-between">
+                      <span className="text-slate-900">الملاحظات:</span>
+                      <span>{c.notes}</span>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

@@ -2,14 +2,14 @@ import {
   Wrench,
   Banknote,
   Truck,
-  Users,
-  FileText,
+  Bell,
+  ShoppingCart,
   ArrowRightLeft,
   Coffee,
-  Sparkles,
+  Brush,
   Recycle,
   Landmark,
-  KeyRound,
+  BadgeCheck,
 } from "lucide-react";
 import {
   ServiceData,
@@ -27,20 +27,20 @@ export const initialServices: ServiceData[] = [
   { id: "s1", name: "طلبات الصيانة", icon: Wrench, received: 45, executed: 45 },
   { id: "s2", name: "النثرية Petty Cash", icon: Banknote, received: 12, executed: 12 },
   { id: "s3", name: "طلبات الدعم اللوجستي", icon: Truck, received: 38, executed: 35 },
-  { id: "s4", name: "خدمات الاستقبال", icon: Users, received: 156, executed: 156 },
-  { id: "s5", name: "طلبات صرف", icon: FileText, received: 8, executed: 8 },
+  { id: "s4", name: "خدمات الاستقبال", icon: Bell, received: 156, executed: 156 },
+  { id: "s5", name: "طلبات صرف", icon: ShoppingCart, received: 8, executed: 8 },
   { id: "s6", name: "طلبات حركات الأصول", icon: ArrowRightLeft, received: 15, executed: 13 },
   { id: "s7", name: "طلبات الضيافة", icon: Coffee, received: 67, executed: 67 },
-  { id: "s8", name: "طلبات النظافة", icon: Sparkles, received: 22, executed: 22 },
+  { id: "s8", name: "طلبات النظافة", icon: Brush, received: 22, executed: 22 },
   { id: "s9", name: "طلبات إدارة النفايات", icon: Recycle, received: 18, executed: 18 },
   { id: "s10", name: "طلبات وخدمات حكومية", icon: Landmark, received: 5, executed: 4 },
-  { id: "s11", name: "طلبات تصريح او الغاء دخول", icon: KeyRound, received: 0, executed: 0 },
+  { id: "s11", name: "طلبات تصريح او الغاء دخول", icon: BadgeCheck, received: 0, executed: 0 },
 ];
 
 export const contracts: ContractData[] = [
-  { type: "العقود الإيجارية", active: 0, inactive: 0 },
-  { type: "الرخص التجارية", active: 0, inactive: 0 },
-  { type: "عقود الخدمات", active: 0, inactive: 0 },
+  { type: "العقود الإيجارية", active: 0, inactive: 0, notes: "" },
+  { type: "الرخص التجارية", active: 0, inactive: 0, notes: "" },
+  { type: "عقود الخدمات", active: 0, inactive: 0, notes: "" },
 ];
 
 export const maintenanceSites: MaintenanceSite[] = [

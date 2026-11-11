@@ -12,6 +12,7 @@ export interface ContractData {
   type: string;
   active: number;
   inactive: number;
+  notes?: string;
 }
 
 export interface MaintenanceSite {

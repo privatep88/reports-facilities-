@@ -437,7 +437,7 @@ export async function exportReportToExcelXlsx(
         c.inactive,
         { formula: `C${curRow}+D${curRow}`, result: total },
         { formula: `IF(E${curRow}=0, 0, C${curRow}/E${curRow})`, result: ratio },
-        c.active > 0 ? "عقود سارية" : "لا توجد عقود سارية",
+        c.notes || (c.active > 0 ? "عقود سارية" : "لا توجد عقود سارية"),
       ]);
       r.eachCell(cell => {
         cell.font = standardFont;
