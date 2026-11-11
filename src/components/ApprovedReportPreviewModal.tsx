@@ -360,7 +360,7 @@ export function ApprovedReportPreviewModal({ report, onClose, onOpenAuditTrail }
                 <tbody className="divide-y divide-slate-100 font-bold text-slate-700">
                   {report.maintenanceSites?.map((site, idx) => (
                     <tr key={site.id || idx} className="hover:bg-slate-50">
-                      <td className="py-2 px-2 text-right font-black text-slate-900">{site.name}</td>
+                      <td className="py-2 px-2 text-right font-black text-slate-900 whitespace-nowrap">{site.name}</td>
                       <td className="py-2 px-2">{site.general}</td>
                       <td className="py-2 px-2">{site.furniture}</td>
                       <td className="py-2 px-2">{site.decor}</td>
