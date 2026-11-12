@@ -638,9 +638,9 @@ export default function Dashboard() {
                 <span className="h-5 w-px bg-white/20 mx-1" />
                 <button
                   type="button"
-                  onClick={() => navigateToSection("report", "alerts-achievements-section", "alerts")}
+                  onClick={() => navigateToSection("report", "challenges-section", "records")}
                   className="relative p-1 text-white hover:text-[#F5C96B] transition-colors cursor-pointer"
-                  title="التنبيهات والاستحقاقات"
+                  title="التحديات والتوصيات"
                 >
                   <Bell className="w-5 h-5 fill-white/90" />
                   <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#EF4444] text-white text-[10px] font-black flex items-center justify-center border border-white">
@@ -692,45 +692,13 @@ export default function Dashboard() {
                 onClick={() => navigateToSection("report", undefined, "home")}
                 className={cn(
                   "px-4 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all cursor-pointer",
-                  activeTab === "report" && activeNavSection === "home"
+                  activeTab === "report"
                     ? "bg-gradient-to-b from-[#EFF6FF] to-[#DBEAFE] text-[#142A45] shadow-sm border border-white"
                     : "text-slate-100 hover:bg-white/10"
                 )}
               >
-                <Home className={cn("w-4 h-4", activeTab === "report" && activeNavSection === "home" ? "text-[#1D4ED8]" : "text-[#38BDF8]")} />
+                <Home className={cn("w-4 h-4", activeTab === "report" ? "text-[#1D4ED8]" : "text-[#38BDF8]")} />
                 <span>الرئيسية</span>
-              </button>
-
-              <span className="h-4 w-px bg-white/15 hidden sm:inline" />
-
-              <button
-                type="button"
-                onClick={() => navigateToSection("report", "kpi-table-section", "kpis")}
-                className={cn(
-                  "px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all cursor-pointer",
-                  activeTab === "report" && activeNavSection === "kpis"
-                    ? "bg-gradient-to-b from-[#EFF6FF] to-[#DBEAFE] text-[#142A45] shadow-sm border border-white"
-                    : "text-slate-100 hover:bg-white/10"
-                )}
-              >
-                <ChartNoAxesCombined className="w-4 h-4 text-[#38BDF8]" />
-                <span>مؤشرات الأداء</span>
-              </button>
-
-              <span className="h-4 w-px bg-white/15 hidden sm:inline" />
-
-              <button
-                type="button"
-                onClick={() => navigateToSection("report", "operational-sections", "ops")}
-                className={cn(
-                  "px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all cursor-pointer",
-                  activeTab === "report" && activeNavSection === "ops"
-                    ? "bg-gradient-to-b from-[#EFF6FF] to-[#DBEAFE] text-[#142A45] shadow-sm border border-white"
-                    : "text-slate-100 hover:bg-white/10"
-                )}
-              >
-                <Settings className="w-4 h-4 text-[#D4A447]" />
-                <span>العمليات التشغيلية</span>
               </button>
 
               <span className="h-4 w-px bg-white/15 hidden sm:inline" />
@@ -763,38 +731,6 @@ export default function Dashboard() {
               >
                 <FileBarChart className="w-4 h-4 text-[#F59E0B]" />
                 <span>التحليلات وجميع الخدمات</span>
-              </button>
-
-              <span className="h-4 w-px bg-white/15 hidden sm:inline" />
-
-              <button
-                type="button"
-                onClick={() => navigateToSection("report", "detailed-records-section", "records")}
-                className={cn(
-                  "px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all cursor-pointer",
-                  activeTab === "report" && activeNavSection === "records"
-                    ? "bg-gradient-to-b from-[#EFF6FF] to-[#DBEAFE] text-[#142A45] shadow-sm border border-white"
-                    : "text-slate-100 hover:bg-white/10"
-                )}
-              >
-                <Database className="w-4 h-4 text-[#38BDF8]" />
-                <span>السجلات التفصيلية</span>
-              </button>
-
-              <span className="h-4 w-px bg-white/15 hidden sm:inline" />
-
-              <button
-                type="button"
-                onClick={() => navigateToSection("report", "approval-section", "settings")}
-                className={cn(
-                  "px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all cursor-pointer",
-                  activeTab === "report" && activeNavSection === "settings"
-                    ? "bg-gradient-to-b from-[#EFF6FF] to-[#DBEAFE] text-[#142A45] shadow-sm border border-white"
-                    : "text-slate-100 hover:bg-white/10"
-                )}
-              >
-                <BadgeCheck className="w-4 h-4 text-[#D4A447]" />
-                <span>الاعتماد والإعدادات</span>
               </button>
             </div>
           </nav>
@@ -1038,8 +974,7 @@ export default function Dashboard() {
                       <tr className="bg-gradient-to-l from-[#CFE2FA]/90 via-[#DEEBFD]/90 to-[#CFE2FA]/90 text-[#142A45] border-y border-[#93C5FD]">
                         <th className="py-2.5 px-2.5 text-center font-black w-16">الترتيب</th>
                         <th className="py-2.5 px-3 text-right font-black">الخدمة التشغيلية</th>
-                        <th className="py-2.5 px-3 text-center font-black w-28">حجم الخدمة</th>
-                        <th className="py-2.5 px-3 text-left font-black w-52 sm:w-64">نسبة الإنجاز</th>
+                        <th className="py-2.5 px-3 text-left font-black w-56 sm:w-72">نسبة الإنجاز</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#DCEBFE]">
@@ -1071,11 +1006,6 @@ export default function Dashboard() {
                                 </span>
                                 <span className="text-[#142A45] font-extrabold truncate">{s.name}</span>
                               </div>
-                            </td>
-
-                            {/* عمود حجم الخدمة */}
-                            <td className="py-2 px-3 text-center font-black text-[#142A45] tabular-nums">
-                              {s.received}
                             </td>
 
                             {/* عمود نسبة الإنجاز */}
@@ -1350,240 +1280,6 @@ export default function Dashboard() {
                     </tr>
                   </tbody>
                 </table>
-              </div>
-            </section>
-
-            {/* ==================== 6. OPERATIONAL DEPARTMENT CARDS + DOMAIN DONUT CHART ==================== */}
-            <section id="operational-sections" className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-              {/* Right 5 Columns in RTL: توزيع الأداء حسب المجالات (Multi-Color Domain Donut Chart) */}
-              <div className="lg:col-span-5 bg-white rounded-2xl border border-[#BFDBFE] shadow-[0_6px_22px_rgba(20,42,69,0.06)] flex flex-col overflow-hidden">
-                <div className="bg-gradient-to-l from-[#DCEBFE] via-[#EAF3FF] to-[#F5F9FF] border-b border-[#BFDBFE] px-4 py-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-9 h-9 rounded-xl bg-[#173B65] text-white flex items-center justify-center shadow-2xs">
-                      <ChartPie className="w-5 h-5 text-[#38BDF8]" />
-                    </span>
-                    <span className="font-black text-base sm:text-lg text-[#142A45]">توزيع الأداء حسب المجالات</span>
-                  </div>
-                </div>
-
-                <div className="p-5 flex-1 flex flex-col sm:flex-row items-center justify-between gap-6">
-                  {/* Legend List (Right Side in RTL) */}
-                  <div className="flex flex-col gap-3 w-full sm:w-1/2">
-                    {domainDistribution.map((item, i) => (
-                      <div key={i} className="flex items-center justify-between gap-2 text-xs sm:text-sm">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="w-3.5 h-3.5 rounded-full shrink-0 shadow-2xs"
-                            style={{ backgroundColor: item.color }}
-                          />
-                          <span className="font-extrabold text-[#142A45]">{item.label}</span>
-                        </div>
-                        <span className="font-black text-[#142A45] tabular-nums">{item.pct}%</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Multi-Segment Donut Chart with Center Facilities Emblem (Left Side in RTL) */}
-                  <div className="relative flex items-center justify-center shrink-0">
-                    <DomainMultiDonut segments={domainDistribution} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Left 7 Columns in RTL: 2x2 Operational Department Summary Cards */}
-              <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Card 1: الصيانة والطلبات */}
-                <OperationalSummaryMiniCard
-                  title="الصيانة والطلبات"
-                  headerGradient="from-[#173B65] via-[#1E4E8C] to-[#2563EB]"
-                  icon={<Wrench className="w-5 h-5 text-white" />}
-                  metrics={[
-                    { label: "إجمالي الطلبات", value: totalReceived, theme: "slate" },
-                    { label: "مكتمل", value: totalExecuted, theme: "green" },
-                    { label: "قيد التنفيذ", value: totalPendingRequests, theme: "blue" },
-                    { label: "متأخر", value: 0, theme: "red" },
-                  ]}
-                  onClick={() => navigateToSection("report", "maintenance-details-section", "ops")}
-                />
-
-                {/* Card 2: الدعم اللوجستي */}
-                <OperationalSummaryMiniCard
-                  title="الدعم اللوجستي"
-                  headerGradient="from-[#142A45] via-[#173B65] to-[#1E40AF]"
-                  icon={<Truck className="w-5 h-5 text-white" />}
-                  metrics={[
-                    { label: "العمليات", value: logisticsTotal, theme: "slate" },
-                    { label: "مكتمل", value: logisticsTotal, theme: "green" },
-                    { label: "قيد التنفيذ", value: 0, theme: "blue" },
-                    { label: "متأخر", value: 0, theme: "red" },
-                  ]}
-                  onClick={() => navigateToSection("report", "logistics-section", "ops")}
-                />
-
-                {/* Card 3: الخدمات الحكومية */}
-                <OperationalSummaryMiniCard
-                  title="الخدمات الحكومية"
-                  headerGradient="from-[#0F4C5C] via-[#0D6E7E] to-[#0E7490]"
-                  icon={<Building2 className="w-5 h-5 text-white" />}
-                  metrics={[
-                    { label: "المعاملات", value: govService?.received || 0, theme: "slate" },
-                    { label: "مكتمل", value: govService?.executed || 0, theme: "green" },
-                    {
-                      label: "قيد التنفيذ",
-                      value: Math.max(0, (govService?.received || 0) - (govService?.executed || 0)),
-                      theme: "blue",
-                    },
-                    { label: "متأخر", value: 0, theme: "red" },
-                  ]}
-                  onClick={() => navigateToSection("report", "security-section", "ops")}
-                />
-
-                {/* Card 4: العقود والموردون */}
-                <OperationalSummaryMiniCard
-                  title="العقود والموردون"
-                  headerGradient="from-[#134E4A] via-[#115E59] to-[#0F766E]"
-                  icon={<ShieldCheck className="w-5 h-5 text-white" />}
-                  metrics={[
-                    { label: "إجمالي العقود", value: totalAllContracts, theme: "slate" },
-                    { label: "سارية", value: totalActiveContracts, theme: "green" },
-                    { label: "قيد التنفيذ", value: 0, theme: "blue" },
-                    { label: "منتهية", value: totalInactiveContracts, theme: "red" },
-                  ]}
-                  onClick={() => navigateToSection("report", "contracts-section", "ops")}
-                />
-              </div>
-            </section>
-
-            {/* ==================== 7. ALERTS & ENTITLEMENTS + KEY ACHIEVEMENTS ==================== */}
-            <section id="alerts-achievements-section" className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-              {/* Right Panel (6 cols): التنبيهات والاستحقاقات */}
-              <div className="lg:col-span-6 bg-white rounded-2xl border border-[#BFDBFE] shadow-[0_6px_22px_rgba(20,42,69,0.06)] flex flex-col overflow-hidden">
-                <div className="bg-gradient-to-l from-[#DCEBFE] via-[#EAF3FF] to-[#F5F9FF] border-b border-[#BFDBFE] px-5 py-3.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shadow-2xs">
-                      <Bell className="w-5 h-5 text-[#D97706] fill-[#F59E0B]" />
-                    </span>
-                    <span className="font-black text-base sm:text-lg text-[#142A45]">التنبيهات والاستحقاقات</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => navigateToSection("report", "challenges-section", "records")}
-                    className="text-xs font-extrabold text-[#2563EB] hover:underline cursor-pointer print:hidden"
-                  >
-                    إدارة التنبيهات
-                  </button>
-                </div>
-
-                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-center gap-3">
-                  {/* Alert Bar 1 (Rose) */}
-                  <div
-                    onClick={() => navigateToSection("report", "contracts-section", "records")}
-                    className="bg-gradient-to-l from-[#FFE4E6] via-[#FFF1F2] to-[#FFE4E6] border border-[#FECDD3] rounded-xl px-4 py-3 flex items-center justify-between gap-3 cursor-pointer hover:shadow-xs transition-all"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Calendar className="w-5 h-5 text-[#BE123C] shrink-0" />
-                      <span className="text-xs sm:text-sm font-black text-[#881337]">
-                        {challengesState[0]?.challenge && challengesState[0].challenge !== "-"
-                          ? challengesState[0].challenge
-                          : "متابعة استحقاقات تجديد العقود والرخص التشغيلية"}
-                      </span>
-                    </div>
-                    <ChevronLeft className="w-4 h-4 text-[#BE123C] shrink-0" />
-                  </div>
-
-                  {/* Alert Bar 2 (Amber/Gold) */}
-                  <div
-                    onClick={() => navigateToSection("report", "fire-hazards-section", "records")}
-                    className="bg-gradient-to-l from-[#FEF3C7] via-[#FFFBEB] to-[#FEF3C7] border border-[#FDE68A] rounded-xl px-4 py-3 flex items-center justify-between gap-3 cursor-pointer hover:shadow-xs transition-all"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Clock className="w-5 h-5 text-[#B45309] shrink-0" />
-                      <span className="text-xs sm:text-sm font-black text-[#78350F]">
-                        {challengesState[1]?.challenge && challengesState[1].challenge !== "-"
-                          ? challengesState[1].challenge
-                          : `موعد الفحص الدوري لأنظمة الإطفاء (${fireExtinguishers.active} طفاية فعّالة)`}
-                      </span>
-                    </div>
-                    <ChevronLeft className="w-4 h-4 text-[#B45309] shrink-0" />
-                  </div>
-
-                  {/* Alert Bar 3 (Blue) */}
-                  <div
-                    onClick={() => navigateToSection("report", "maintenance-details-section", "records")}
-                    className="bg-gradient-to-l from-[#DBEAFE] via-[#EFF6FF] to-[#DBEAFE] border border-[#BFDBFE] rounded-xl px-4 py-3 flex items-center justify-between gap-3 cursor-pointer hover:shadow-xs transition-all"
-                  >
-                    <div className="flex items-center gap-3">
-                      <ClipboardCheck className="w-5 h-5 text-[#1D4ED8] shrink-0" />
-                      <span className="text-xs sm:text-sm font-black text-[#1E3A8A]">
-                        {challengesState[2]?.challenge && challengesState[2].challenge !== "-"
-                          ? challengesState[2].challenge
-                          : "مراجعة استهلاك الكهرباء والمياه وأعمال الصيانة الوقائية للمقرات"}
-                      </span>
-                    </div>
-                    <ChevronLeft className="w-4 h-4 text-[#1D4ED8] shrink-0" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Left Panel (6 cols): أبرز الإنجازات خلال الشهر */}
-              <div className="lg:col-span-6 bg-white rounded-2xl border border-[#BFDBFE] shadow-[0_6px_22px_rgba(20,42,69,0.06)] flex flex-col overflow-hidden">
-                <div className="bg-gradient-to-l from-[#DCEBFE] via-[#EAF3FF] to-[#F5F9FF] border-b border-[#BFDBFE] px-5 py-3.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shadow-2xs">
-                      <Award className="w-5 h-5 text-[#D97706]" />
-                    </span>
-                    <span className="font-black text-base sm:text-lg text-[#142A45]">أبرز الإنجازات خلال الشهر</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => navigateToSection("report", "tasks-section", "records")}
-                    className="text-xs font-extrabold text-[#2563EB] hover:underline cursor-pointer print:hidden"
-                  >
-                    عرض المهام ({tasksState.length})
-                  </button>
-                </div>
-
-                <div className="p-4 flex-1 grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-                  {/* Right Half: Achievements Bullet List */}
-                  <div className="sm:col-span-7 space-y-2.5 pr-1">
-                    <div className="flex items-center gap-2.5">
-                      <CheckCircle className="w-4 h-4 text-[#10B981] shrink-0" />
-                      <span className="text-xs sm:text-sm font-extrabold text-[#142A45]">
-                        إنجاز {overallCompletion.toFixed(1)}% من إجمالي الطلبات ({totalExecuted} من {totalReceived})
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <CheckCircle className="w-4 h-4 text-[#10B981] shrink-0" />
-                      <span className="text-xs sm:text-sm font-extrabold text-[#142A45]">
-                        الالتزام بمستويات الخدمة المعتمدة في جميع المقرات
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <CheckCircle className="w-4 h-4 text-[#10B981] shrink-0" />
-                      <span className="text-xs sm:text-sm font-extrabold text-[#142A45]">
-                        {tasksState[0]?.topic ? `إنجاز: ${tasksState[0].topic}` : "استكمال أعمال الصيانة الوقائية والفنية"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <CheckCircle className="w-4 h-4 text-[#10B981] shrink-0" />
-                      <span className="text-xs sm:text-sm font-extrabold text-[#142A45]">
-                        {tasksState[1]?.topic ? `متابعة: ${tasksState[1].topic}` : "تحديث ومتابعة العقود والخدمات التشغيلية"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Left Half: Male HVAC Maintenance Engineer Photo */}
-                  <div
-                    className="sm:col-span-5 h-36 sm:h-40 rounded-xl overflow-hidden border border-[#93C5FD] shadow-xs relative print:hidden"
-                    data-html2canvas-ignore="true"
-                  >
-                    <img
-                      src={achievementsHvacEngineer}
-                      alt="مهندس صيانة التكييف والمرافق"
-                      className="w-full h-full object-cover object-center"
-                    />
-                  </div>
-                </div>
               </div>
             </section>
 
