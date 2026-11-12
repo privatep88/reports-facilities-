@@ -105,29 +105,42 @@ const defaultApprovals = {
   review: { role: "رئيس قسم إدارة المرافق", name: "فيصل سويد السليماني", date: "", signature: "" },
 };
 
+const MONTHLY_STORAGE_PREFIX = "fm_monthly_v2_";
+
+function cloneDefault<T>(val: T): T {
+  try {
+    return JSON.parse(JSON.stringify(val));
+  } catch {
+    return val;
+  }
+}
+
 function useMonthlyState<T>(key: string, defaultValue: T, yearMonth: string) {
+  const storageKey = `${MONTHLY_STORAGE_PREFIX}${yearMonth}_${key}`;
   const [state, setState] = useState<T>(() => {
     try {
-      const stored = localStorage.getItem(`${key}-${yearMonth}`);
+      const stored = localStorage.getItem(storageKey);
       if (stored) return JSON.parse(stored);
     } catch (e) {}
-    return defaultValue;
+    return cloneDefault(defaultValue);
   });
   React.useEffect(() => {
     try {
-      const stored = localStorage.getItem(`${key}-${yearMonth}`);
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         setState(JSON.parse(stored));
       } else {
-        setState(defaultValue);
+        setState(cloneDefault(defaultValue));
       }
     } catch (e) {
-      setState(defaultValue);
+      setState(cloneDefault(defaultValue));
     }
-  }, [yearMonth, key]);
+  }, [storageKey]);
   React.useEffect(() => {
-    localStorage.setItem(`${key}-${yearMonth}`, JSON.stringify(state));
-  }, [state, yearMonth, key]);
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    } catch (e) {}
+  }, [state, storageKey]);
   return [state, setState] as const;
 }
 
@@ -184,8 +197,29 @@ function SaaedLogo({ darkText = true, size = "md" }: { darkText?: boolean; size?
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<"report" | "services" | "approved">("report");
   const [activeNavSection, setActiveNavSection] = useState<string>("home");
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
+  const lastTrackedCalendarMonthRef = React.useRef(`${new Date().getFullYear()}-${new Date().getMonth() + 1}`);
+
+  // Automatically advance to the new calendar month (with fresh zeroed state) when a new month begins
+  React.useEffect(() => {
+    const checkCalendarMonthRollover = () => {
+      const now = new Date();
+      const currentCalKey = `${now.getFullYear()}-${now.getMonth() + 1}`;
+      if (lastTrackedCalendarMonthRef.current !== currentCalKey) {
+        lastTrackedCalendarMonthRef.current = currentCalKey;
+        setSelectedYear(now.getFullYear());
+        setSelectedMonth(now.getMonth() + 1);
+      }
+    };
+    const timer = setInterval(checkCalendarMonthRollover, 60000);
+    window.addEventListener("focus", checkCalendarMonthRollover);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("focus", checkCalendarMonthRollover);
+    };
+  }, []);
+
   const yearMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, "0")}`;
   const [currentMonthStatus, setCurrentMonthStatus] = useState(() => getReportWorkflowStatus(yearMonth).status);
 
@@ -850,11 +884,16 @@ export default function Dashboard() {
           />
         ) : activeTab === "services" ? (
           <ServicesDashboardView
+            year={selectedYear}
+            month={selectedMonth}
+            monthName={monthsList[selectedMonth - 1]}
             services={services}
             contracts={contractsState}
+            fireExtinguishers={fireExtinguishers}
+            hazardNotes={hazardNotes}
             maintenanceSites={maintenanceSitesState}
             maintenanceServices={maintenanceServices}
-            logistics={logisticsState}
+            logistics={computedLogisticsState}
             security={securityState}
             tasks={tasksState}
             challenges={challengesState}
@@ -890,11 +929,11 @@ export default function Dashboard() {
                 fillWidth={`${Math.min(100, overallCompletion)}%`}
               />
 
-              {/* Card 2: Blue — الطلبات قيد التنفيذ / إجمالي الخدمات */}
+              {/* Card 2: Blue — الطلبات قيد التنفيذ */}
               <SummaryCard
                 title="الطلبات قيد التنفيذ"
                 subtitle={`In Progress · (${services.length} خدمة)`}
-                value={totalPendingRequests > 0 ? totalPendingRequests : services.length}
+                value={totalPendingRequests}
                 icon={<ClipboardList className="w-7 h-7 text-white" />}
                 circleBg="bg-gradient-to-br from-[#2563EB] to-[#1D4ED8]"
                 cardBg="bg-gradient-to-br from-[#EFF6FF] via-[#F5F9FF] to-[#DBEAFE]"
@@ -903,15 +942,15 @@ export default function Dashboard() {
                 trendColor="text-[#2563EB]"
                 barColor="bg-gradient-to-l from-[#1D4ED8] to-[#38BDF8]"
                 trackColor="bg-[#2563EB]/20"
-                fillWidth="78%"
+                fillWidth={totalReceived > 0 ? `${Math.min(100, (totalPendingRequests / totalReceived) * 100)}%` : "0%"}
               />
 
-              {/* Card 3: Gold — الطلبات المنجزة / أعلى خدمة */}
+              {/* Card 3: Gold — الطلبات المنجزة */}
               <SummaryCard
                 title="الطلبات المنجزة"
                 subtitle="Completed Requests"
                 value={totalExecuted}
-                serviceNameBadge={topService ? `الأعلى: ${topService.name} (${topService.received})` : undefined}
+                serviceNameBadge={topService && topService.received > 0 ? `الأعلى: ${topService.name} (${topService.received})` : undefined}
                 icon={<Wrench className="w-7 h-7 text-white" />}
                 circleBg="bg-gradient-to-br from-[#D97706] to-[#B45309]"
                 cardBg="bg-gradient-to-br from-[#FFFBEB] via-[#FEF9E7] to-[#FDE68A]/75"
@@ -936,7 +975,7 @@ export default function Dashboard() {
                 trendColor="text-[#6366F1]"
                 barColor="bg-gradient-to-l from-[#4338CA] to-[#818CF8]"
                 trackColor="bg-[#6366F1]/20"
-                fillWidth="100%"
+                fillWidth={totalReceived > 0 ? "100%" : "0%"}
               />
             </section>
 

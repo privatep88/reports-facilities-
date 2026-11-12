@@ -1,8 +1,8 @@
 import { ApprovedReportSnapshot, ReportAuditEntry, ReportStatus } from "../types";
 
-const ARCHIVE_STORAGE_KEY = "fm_approved_reports_archive_v1";
-const WORKFLOW_PREFIX = "fm_workflow_status_";
-const AUDIT_PREFIX = "fm_report_audit_";
+const ARCHIVE_STORAGE_KEY = "fm_approved_reports_archive_v2";
+const WORKFLOW_PREFIX = "fm_workflow_status_v2_";
+const AUDIT_PREFIX = "fm_report_audit_v2_";
 
 // Format unique Report ID, e.g. FM-2027-01 or FM-2027-01-V2
 export function generateReportId(year: number, month: number, version: number = 1): string {
