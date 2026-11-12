@@ -73,7 +73,8 @@ import { ServicesDashboardView } from "./ServicesDashboardView";
 import { ApprovedReportsArchive } from "./ApprovedReportsArchive";
 import { ReportWorkflowToolbar } from "./ReportWorkflowToolbar";
 import { getReportWorkflowStatus } from "../lib/reportsArchive";
-import { triggerPrintReport, exportReportToPDF, exportReportToExcelXlsx } from "../lib/exportUtils";
+import { triggerPrintReport, exportReportToPDF, exportReportToExcelXlsx, MonthlyReportExportData } from "../lib/exportUtils";
+import { FacilitiesMonthlyReportPrint, FacilitiesReportPrintPreviewModal } from "./FacilitiesMonthlyReportPrint";
 import saaedHeaderUaeBuilding from "../assets/images/saaed_header_uae_building_1794458820411.jpg";
 import overallPerfEngineerTablet from "../assets/images/overall_perf_engineer_tablet_1794458819773.jpg";
 import achievementsHvacEngineer from "../assets/images/achievements_hvac_engineer_1794458823307.jpg";
@@ -279,17 +280,14 @@ export default function Dashboard() {
 
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [isExportingExcel, setIsExportingExcel] = useState(false);
+  const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
 
   const handlePrint = () => {
-    triggerPrintReport();
+    setIsPrintPreviewOpen(true);
   };
 
-  const handleExportPDF = async () => {
-    const element = document.getElementById("dashboard-content");
-    if (!element) return;
-    const filename = `Facilities_Monthly_Report_${selectedYear}_${selectedMonth.toString().padStart(2, "0")}`;
-    setIsExportingPDF(true);
-    await exportReportToPDF(element, filename, loading => setIsExportingPDF(loading));
+  const handleExportPDF = () => {
+    setIsPrintPreviewOpen(true);
   };
 
   const handleExportExcel = async () => {
@@ -579,6 +577,16 @@ export default function Dashboard() {
     };
   };
 
+  const currentExportData: MonthlyReportExportData = {
+    ...getReportSnapshotData(),
+    id: `FM-${selectedYear}-${selectedMonth.toString().padStart(2, "0")}`,
+    year: selectedYear,
+    month: selectedMonth,
+    monthName: monthsList[selectedMonth - 1],
+    isApproved: currentMonthStatus === "approved",
+    statusLabel: currentMonthStatus === "approved" ? "معتمد رسمياً" : "نشط / قيد المراجعة",
+  };
+
   const navigateToSection = (tab: "report" | "services" | "approved", sectionId?: string, navKey?: string) => {
     setActiveTab(tab);
     if (navKey) setActiveNavSection(navKey);
@@ -591,7 +599,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div id="dashboard-content" className="min-h-screen bg-[#E9F1FA] text-slate-800 font-sans pb-10" dir="rtl">
+    <div id="dashboard-content" className="min-h-screen bg-[#E9F1FA] text-slate-800 font-sans pb-10 print:bg-white print:pb-0" dir="rtl">
+      <div id="dashboard-screen-view" className="print:hidden">
       {/* ==================== 1. MANDATORY REFERENCE HEADER ==================== */}
       <header className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-4">
         <div className="rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(20,42,69,0.18)] border border-[#93C5FD]/90 bg-[#142A45]">
@@ -2446,6 +2455,21 @@ export default function Dashboard() {
           </div>
         </div>
       </footer>
+      </div>
+
+      {/* Interactive A4 Print & PDF Preview Modal */}
+      <FacilitiesReportPrintPreviewModal
+        isOpen={isPrintPreviewOpen}
+        onClose={() => setIsPrintPreviewOpen(false)}
+        data={currentExportData}
+      />
+
+      {/* Dedicated Hidden A4 Print View for Direct Browser Ctrl+P Printing */}
+      {!isPrintPreviewOpen && (
+        <div id="dashboard-print-view" className="hidden print:block">
+          <FacilitiesMonthlyReportPrint data={currentExportData} />
+        </div>
+      )}
     </div>
   );
 }

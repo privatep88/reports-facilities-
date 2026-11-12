@@ -77,10 +77,110 @@ export interface MonthlyReportExportData {
  * Native Browser Print Handler with pre-flight checks
  */
 export function triggerPrintReport(): void {
-  // Give a small tick for any layout reflow
-  window.setTimeout(() => {
-    window.print();
-  }, 100);
+  if (typeof document !== "undefined" && "fonts" in document) {
+    (document as any).fonts.ready.then(() => {
+      window.setTimeout(() => {
+        window.print();
+      }, 120);
+    });
+  } else {
+    window.setTimeout(() => {
+      window.print();
+    }, 120);
+  }
+}
+
+/**
+ * Enterprise Page-by-Page A4 Portrait PDF Engine
+ * Renders each discrete `.a4-report-page` (210mm x 297mm) individually onto an exact A4 PDF page
+ * so tables, headers, charts, and signatures are never sliced or orphaned across page boundaries.
+ */
+export async function exportA4PagesToPDF(
+  container: HTMLElement | null,
+  filename: string,
+  onProgress?: (isGenerating: boolean) => void
+): Promise<boolean> {
+  if (!container) {
+    console.error("A4 PDF export container not found");
+    return false;
+  }
+
+  try {
+    if (onProgress) onProgress(true);
+
+    // Ensure web fonts (Cairo RTL) are fully loaded before rasterizing
+    if (typeof document !== "undefined" && "fonts" in document) {
+      await (document as any).fonts.ready;
+    }
+
+    const finalFilename = filename.endsWith(".pdf") ? filename : `${filename}.pdf`;
+    const pageElements = Array.from(container.querySelectorAll<HTMLElement>(".a4-report-page"));
+
+    if (pageElements.length === 0) {
+      return await exportReportToPDF(container, finalFilename, onProgress);
+    }
+
+    // Initialize an A4 Portrait jsPDF instance via html2pdf worker
+    const pdfWorker = html2pdf().set({
+      margin: 0,
+      filename: finalFilename,
+      jsPDF: {
+        unit: "mm",
+        format: "a4",
+        orientation: "portrait" as const,
+      },
+    });
+
+    // Create a dummy 1x1 canvas seed to initialize the underlying jsPDF object cleanly
+    const seedDiv = document.createElement("div");
+    seedDiv.style.width = "1px";
+    seedDiv.style.height = "1px";
+    const pdf = await pdfWorker.from(seedDiv).toPdf().get("pdf");
+
+    for (let i = 0; i < pageElements.length; i++) {
+      const pageEl = pageElements[i];
+      const rect = pageEl.getBoundingClientRect();
+      const renderWidth = Math.max(pageEl.scrollWidth, Math.ceil(rect.width), 794);
+      const renderHeight = Math.max(pageEl.scrollHeight, Math.ceil(rect.height), 1123);
+
+      const canvas: HTMLCanvasElement = await html2pdf()
+        .set({
+          margin: 0,
+          image: { type: "jpeg" as const, quality: 0.98 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            letterRendering: true,
+            logging: false,
+            backgroundColor: "#FFFFFF",
+            width: renderWidth,
+            height: renderHeight,
+            windowWidth: renderWidth,
+            windowHeight: renderHeight,
+            scrollX: 0,
+            scrollY: 0,
+          },
+        })
+        .from(pageEl)
+        .toCanvas()
+        .get("canvas");
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.98);
+      if (i > 0) {
+        pdf.addPage("a4", "portrait");
+      }
+      pdf.addImage(imgData, "JPEG", 0, 0, 210, 297, undefined, "FAST");
+    }
+
+    pdf.save(finalFilename);
+
+    if (onProgress) onProgress(false);
+    return true;
+  } catch (err) {
+    console.error("A4 Page-by-Page PDF Generation error:", err);
+    if (onProgress) onProgress(false);
+    return false;
+  }
 }
 
 /**
@@ -96,18 +196,26 @@ export async function exportReportToPDF(
     return false;
   }
 
+  // If the target element contains discrete .a4-report-page sheets, use the exact A4 page engine
+  if (element.querySelector(".a4-report-page")) {
+    return exportA4PagesToPDF(element, filename, onProgress);
+  }
+
   try {
     if (onProgress) onProgress(true);
 
+    if (typeof document !== "undefined" && "fonts" in document) {
+      await (document as any).fonts.ready;
+    }
+
     const width = element.scrollWidth;
-    
-    // Configure standard ISO A4 options with smart pagination
+
     const opt = {
-      margin: [10, 8, 10, 8] as [number, number, number, number], // 10mm top/bottom, 8mm left/right
+      margin: [10, 8, 10, 8] as [number, number, number, number],
       filename: filename.endsWith(".pdf") ? filename : `${filename}.pdf`,
       image: { type: "jpeg" as const, quality: 0.98 },
       html2canvas: {
-        scale: 2, // High resolution crisp text
+        scale: 2,
         useCORS: true,
         letterRendering: true,
         logging: false,
@@ -119,8 +227,8 @@ export async function exportReportToPDF(
         orientation: "portrait" as const,
       },
       pagebreak: {
-        mode: ["avoid-all", "css", "legacy"],
-        avoid: ["section", "tr", ".avoid-break", ".kpi-card", ".contract-block"],
+        mode: ["css", "legacy"],
+        avoid: ["tr", ".avoid-break"],
       },
     };
 

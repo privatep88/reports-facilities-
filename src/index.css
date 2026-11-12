@@ -13,9 +13,9 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm 8mm;
+    margin: 0;
   }
-  
+
   *,
   *::before,
   *::after {
@@ -30,30 +30,41 @@
     color: #0f172a !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 100% !important;
-    font-size: 12px;
+    width: 210mm !important;
+    font-family: 'Cairo', ui-sans-serif, system-ui, sans-serif !important;
   }
 
-  #dashboard-content {
-    max-width: 100% !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: #ffffff !important;
-    box-shadow: none !important;
-  }
-
+  #dashboard-screen-view,
   .print\:hidden,
   [data-html2canvas-ignore="true"] {
     display: none !important;
   }
 
-  /* Smart Page Break Control */
-  section,
-  .avoid-break,
-  .print-break-inside-avoid {
-    break-inside: avoid !important;
+  #dashboard-print-view {
+    display: block !important;
+    width: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .a4-report-page {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    page-break-after: always !important;
+    break-after: page !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    overflow: hidden !important;
+  }
+
+  .a4-report-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
   }
 
   table {
@@ -68,11 +79,5 @@
   tr {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
-  }
-
-  /* Prevent overflow cutoffs */
-  .overflow-x-auto,
-  .overflow-hidden {
-    overflow: visible !important;
   }
 }
