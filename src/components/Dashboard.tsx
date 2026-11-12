@@ -684,9 +684,9 @@ export default function Dashboard() {
           {/* Horizontal Dark-Navy Navigation Bar Matching Reference Image */}
           <nav
             aria-label="التنقل الرئيسي"
-            className="bg-gradient-to-l from-[#102542] via-[#142A45] to-[#0F223C] border-t border-[#38BDF8]/25 px-3 sm:px-5 py-2 flex flex-wrap items-center justify-between gap-2 print:hidden"
+            className="bg-gradient-to-l from-[#102542] via-[#142A45] to-[#0F223C] border-t border-[#38BDF8]/25 px-3 sm:px-5 py-2.5 flex flex-wrap items-center justify-center gap-2 print:hidden"
           >
-            <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => navigateToSection("report", undefined, "home")}
