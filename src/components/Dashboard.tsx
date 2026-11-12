@@ -303,7 +303,10 @@ export default function Dashboard() {
   const totalPendingRequests = Math.max(0, totalReceived - totalExecuted);
   const overallCompletion = totalReceived === 0 ? 0 : (totalExecuted / totalReceived) * 100;
 
-  const sortedServices = useMemo(() => [...services].sort((a, b) => b.received - a.received), [services]);
+  const sortedServices = useMemo(
+    () => [...services].sort((a, b) => b.received - a.received || b.executed - a.executed),
+    [services]
+  );
   const topService = sortedServices.length > 0 ? sortedServices[0] : null;
 
   // Logistics computations
@@ -1001,73 +1004,108 @@ export default function Dashboard() {
               />
             </section>
 
-            {/* ==================== 4. SITES PERFORMANCE + OVERALL DEPARTMENT PERFORMANCE ==================== */}
+            {/* ==================== 4. OPERATIONAL SERVICES PERFORMANCE ANALYSIS + OVERALL DEPARTMENT PERFORMANCE ==================== */}
             <section className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-              {/* Right Panel (7 cols): أداء المقرات والمواقع (Sites Performance) */}
-              <div className="lg:col-span-7 bg-white rounded-2xl border border-[#BFDBFE] shadow-[0_6px_22px_rgba(20,42,69,0.06)] flex flex-col overflow-hidden">
+              {/* Right Panel (7 cols): تحليل أداء الخدمات التشغيلية (Operational Services Performance Analysis) */}
+              <div className="lg:col-span-7 bg-gradient-to-b from-white via-[#F8FBFF] to-[#EEF5FF] rounded-2xl border border-[#BFDBFE] shadow-[0_6px_22px_rgba(20,42,69,0.06)] flex flex-col overflow-hidden">
                 <div className="bg-gradient-to-l from-[#DCEBFE] via-[#EAF3FF] to-[#F5F9FF] border-b border-[#BFDBFE] px-5 py-3.5 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className="w-10 h-10 rounded-xl bg-white border border-[#93C5FD] flex items-center justify-center shadow-2xs shrink-0">
-                      <Layers className="w-5 h-5 text-[#173B65]" />
+                      <ChartNoAxesCombined className="w-5 h-5 text-[#2563EB]" />
                     </span>
                     <div className="flex flex-col text-right">
                       <span className="text-base sm:text-lg font-black text-[#142A45] leading-tight">
-                        أداء المقرات والمواقع
+                        تحليل أداء الخدمات التشغيلية
                       </span>
-                      <span className="text-[11px] font-bold text-[#173B65]/75">Sites Performance</span>
+                      <span className="text-[11px] font-bold text-[#173B65]/75">
+                        Operational Services Performance Analysis
+                      </span>
                     </div>
                   </div>
                   <button
                     type="button"
-                    onClick={() => navigateToSection("report", "maintenance-details-section", "ops")}
+                    onClick={() => navigateToSection("report", "kpi-table-section", "kpis")}
                     className="w-9 h-9 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white flex items-center justify-center shadow-xs transition-colors cursor-pointer"
-                    title="عرض وتعديل تفاصيل المقرات"
+                    title="الانتقال إلى جدول مؤشرات الأداء التشغيلية"
                   >
                     <Target className="w-4 h-4" />
                   </button>
                 </div>
 
-                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-xs font-extrabold text-slate-500 border-b border-slate-200 pb-2 mb-2.5 px-1">
-                    <span>الموقع / المقر</span>
-                    <span>نسبة الإنجاز</span>
-                  </div>
-                  <div className="space-y-2.5">
-                    {sitesPerformanceList.map((site, idx) => {
-                      const isWarning = site.pct < 93;
-                      return (
-                        <div
-                          key={site.id}
-                          className="grid grid-cols-12 items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-[#F0F7FF] transition-colors border-b border-slate-100/80 last:border-0"
-                        >
-                          <div className="col-span-5 sm:col-span-4 flex items-center gap-2 text-right">
-                            <MapPin className={cn("w-4 h-4 shrink-0", idx % 2 === 0 ? "text-[#2563EB]" : "text-[#0D9488]")} />
-                            <span className="text-xs sm:text-sm font-extrabold text-[#142A45] truncate">{site.name}</span>
-                          </div>
-                          <div className="col-span-5 sm:col-span-6 px-2">
-                            <div className="h-2.5 bg-slate-200/80 rounded-full overflow-hidden relative w-full">
-                              <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${site.pct}%` }}
-                                transition={{ duration: 0.9 }}
-                                className={cn(
-                                  "absolute inset-y-0 right-0 rounded-full",
-                                  isWarning
-                                    ? "bg-gradient-to-l from-[#D97706] to-[#F59E0B]"
-                                    : idx === 0
-                                    ? "bg-gradient-to-l from-[#059669] to-[#10B981]"
-                                    : "bg-gradient-to-l from-[#0D9488] to-[#2563EB]"
-                                )}
-                              />
-                            </div>
-                          </div>
-                          <div className="col-span-2 text-left font-black text-xs sm:text-sm text-[#142A45] tabular-nums">
-                            {site.pct}%
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between overflow-x-auto">
+                  <table className="w-full text-xs sm:text-sm border-collapse">
+                    <thead>
+                      <tr className="bg-gradient-to-l from-[#CFE2FA]/90 via-[#DEEBFD]/90 to-[#CFE2FA]/90 text-[#142A45] border-y border-[#93C5FD]">
+                        <th className="py-2.5 px-2.5 text-center font-black w-16">الترتيب</th>
+                        <th className="py-2.5 px-3 text-right font-black">الخدمة التشغيلية</th>
+                        <th className="py-2.5 px-3 text-center font-black w-28">حجم الخدمة</th>
+                        <th className="py-2.5 px-3 text-left font-black w-52 sm:w-64">نسبة الإنجاز</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#DCEBFE]">
+                      {sortedServices.map((s, idx) => {
+                        const ratio = s.received === 0 ? 0 : (s.executed / s.received) * 100;
+                        const isExcellent = ratio >= 95;
+                        const isGood = ratio >= 80 && ratio < 95;
+
+                        return (
+                          <tr
+                            key={s.id}
+                            className={cn(
+                              "hover:bg-[#E6F1FE]/70 transition-colors",
+                              idx % 2 === 1 ? "bg-[#F2F7FE]" : "bg-white/90"
+                            )}
+                          >
+                            {/* عمود الترتيب */}
+                            <td className="py-2 px-2.5 text-center">
+                              <span className="w-6 h-6 rounded-full bg-gradient-to-b from-[#E0EEFF] to-[#C7DFFB] border border-[#93C5FD] text-[#142A45] font-black text-xs inline-flex items-center justify-center shadow-2xs tabular-nums">
+                                {idx + 1}
+                              </span>
+                            </td>
+
+                            {/* عمود الخدمة التشغيلية */}
+                            <td className="py-2 px-3 font-extrabold text-right">
+                              <div className="flex items-center gap-2.5">
+                                <span className="w-7 h-7 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-center shrink-0 shadow-2xs">
+                                  <s.icon className={cn("w-4 h-4", getServiceIconColor(s.id))} />
+                                </span>
+                                <span className="text-[#142A45] font-extrabold truncate">{s.name}</span>
+                              </div>
+                            </td>
+
+                            {/* عمود حجم الخدمة */}
+                            <td className="py-2 px-3 text-center font-black text-[#142A45] tabular-nums">
+                              {s.received}
+                            </td>
+
+                            {/* عمود نسبة الإنجاز */}
+                            <td className="py-2 px-3">
+                              <div className="flex items-center gap-3">
+                                <div className="flex-1 h-2.5 bg-slate-200/90 rounded-full overflow-hidden relative">
+                                  <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${Math.min(ratio, 100)}%` }}
+                                    transition={{ duration: 0.7 }}
+                                    className={cn(
+                                      "absolute inset-y-0 right-0 rounded-full",
+                                      isExcellent
+                                        ? "bg-gradient-to-l from-[#059669] to-[#10B981]"
+                                        : isGood
+                                        ? "bg-gradient-to-l from-[#D97706] to-[#F59E0B]"
+                                        : "bg-gradient-to-l from-[#DC2626] to-[#EF4444]"
+                                    )}
+                                  />
+                                </div>
+                                <span className="w-12 text-left font-black text-xs sm:text-sm text-[#142A45] tabular-nums">
+                                  {ratio === 100 ? "100%" : `${ratio.toFixed(1)}%`}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
@@ -1135,10 +1173,10 @@ export default function Dashboard() {
                   </span>
                   <div className="flex flex-col text-right">
                     <h2 className="text-lg sm:text-xl font-black text-[#142A45] leading-tight">
-                      مؤشرات الأداء التشغيلية وملخص الخدمات
+                      مؤشرات الأداء التشغيلية
                     </h2>
                     <span className="text-[11px] font-bold text-[#173B65]/75">
-                      Operational Performance Indicators & Services Summary
+                      Operational Performance Indicators
                     </span>
                   </div>
                 </div>
@@ -1186,9 +1224,9 @@ export default function Dashboard() {
                   <thead>
                     <tr className="bg-gradient-to-l from-[#CFE2FA] via-[#DEEBFD] to-[#CFE2FA] text-[#142A45] border-y border-[#93C5FD]">
                       <th className="py-3 px-3 text-center font-black w-12">م</th>
-                      <th className="py-3 px-4 text-right font-black">المؤشر / الخدمة</th>
-                      <th className="py-3 px-4 text-center font-black">المستهدف (المستلمة)</th>
-                      <th className="py-3 px-4 text-center font-black">المتحقق (المنفذة)</th>
+                      <th className="py-3 px-4 text-right font-black">المؤشر</th>
+                      <th className="py-3 px-4 text-center font-black">المستهدف</th>
+                      <th className="py-3 px-4 text-center font-black">المتحقق</th>
                       <th className="py-3 px-4 text-center font-black w-56">نسبة الإنجاز</th>
                       <th className="py-3 px-4 text-center font-black w-32">حالة الأداء</th>
                     </tr>
