@@ -1,14 +1,40 @@
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
+import {defineConfig, Plugin} from 'vite';
 
-export default defineConfig(() => {
+function reactEntryBridgePlugin(): Plugin {
   return {
-    plugins: [react()],
+    name: 'react-entry-bridge',
+    transformIndexHtml: {
+      order: 'pre',
+      handler(html: string) {
+        if (html.includes('/src/main.tsx')) {
+          return html;
+        }
+        return html
+          .replace(/<link rel="stylesheet"[^>]*href="[^"]*assets\/index-[^"]*\.css"[^>]*>\s*/g, '')
+          .replace(
+            /<script type="module"[^>]*src="[^"]*assets\/index-[^"]*\.js"[^>]*><\/script>/,
+            '<script type="module" src="/src/main.tsx"></script>',
+          );
+      },
+    },
+  };
+}
+
+export default defineConfig(({ command }) => {
+  return {
+    base: process.env.VITE_BASE_PATH || (command === 'build' ? '/reports-facilities-/' : '/'),
+    plugins: [reactEntryBridgePlugin(), react()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
+    },
+    build: {
+      outDir: 'dist',
+      assetsDir: 'assets',
+      emptyOutDir: true,
     },
     server: {
       host: '0.0.0.0',

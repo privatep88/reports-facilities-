@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
+    "build": "rm -rf assets dist && vite build && cp -r dist/assets ./assets && cp dist/index.html ./index.html && cp dist/index.html ./404.html && touch .nojekyll",
     "preview": "vite preview",
-    "clean": "rm -rf dist server.js",
+    "clean": "rm -rf dist assets 404.html server.js",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
