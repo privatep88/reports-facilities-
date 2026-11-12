@@ -2214,8 +2214,8 @@ export default function Dashboard() {
                   isEditing={editModes.approvals}
                   onToggleEdit={() => toggleEdit("approvals")}
                 />
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-4 text-sm items-stretch">
-                  <div className="lg:col-span-5 bg-gradient-to-b from-[#EFF6FF] to-white rounded-xl border border-[#BFDBFE] p-5 shadow-xs relative overflow-hidden">
+                <div className="grid grid-cols-1 lg:grid-cols-12 print:grid-cols-2 gap-5 mt-4 text-sm items-stretch">
+                  <div className="lg:col-span-4 print:col-span-1 h-full flex flex-col justify-between bg-gradient-to-b from-[#EFF6FF] to-white rounded-xl border border-[#BFDBFE] p-5 shadow-xs relative overflow-hidden">
                     <div className="relative z-10 flex justify-between items-center bg-[#DCEBFC] rounded-lg px-3.5 py-2.5 mb-4 border border-[#93C5FD]/60">
                       <span className="font-black text-[#142A45] text-base">
                         الإعداد{" "}
@@ -2227,8 +2227,8 @@ export default function Dashboard() {
                         <Users className="w-4 h-4 text-[#2563EB]" />
                       </span>
                     </div>
-                    <div className="relative z-10 space-y-3.5">
-                      <p className="font-black text-[#173B65] mb-4 text-center text-base">
+                    <div className="relative z-10 space-y-3.5 flex-1 flex flex-col justify-between">
+                      <p className="font-black text-[#173B65] mb-2 text-center text-base">
                         <EditableCell
                           isEditing={editModes.approvals}
                           value={approvalsState.preparation.role}
@@ -2277,7 +2277,7 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  <div className="lg:col-span-4 bg-gradient-to-b from-[#EFF6FF] to-white rounded-xl border border-[#BFDBFE] p-5 shadow-xs relative overflow-hidden">
+                  <div className="lg:col-span-4 print:col-span-1 h-full flex flex-col justify-between bg-gradient-to-b from-[#EFF6FF] to-white rounded-xl border border-[#BFDBFE] p-5 shadow-xs relative overflow-hidden">
                     <div className="relative z-10 flex justify-between items-center bg-[#DCEBFC] rounded-lg px-3.5 py-2.5 mb-4 border border-[#93C5FD]/60">
                       <span className="font-black text-[#142A45] text-base">
                         المراجعة والاعتماد{" "}
@@ -2289,8 +2289,8 @@ export default function Dashboard() {
                         <CheckCircle className="w-4 h-4 text-[#2563EB]" />
                       </span>
                     </div>
-                    <div className="relative z-10 space-y-3.5">
-                      <p className="font-black text-[#173B65] mb-4 text-center text-base">
+                    <div className="relative z-10 space-y-3.5 flex-1 flex flex-col justify-between">
+                      <p className="font-black text-[#173B65] mb-2 text-center text-base">
                         <EditableCell
                           isEditing={editModes.approvals}
                           value={approvalsState.review.role}
@@ -2338,7 +2338,7 @@ export default function Dashboard() {
                   </div>
 
                   <div
-                    className="lg:col-span-3 rounded-xl overflow-hidden border border-[#BFDBFE] shadow-xs relative min-h-[190px] print:hidden"
+                    className="lg:col-span-4 h-full rounded-xl overflow-hidden border border-[#BFDBFE] shadow-xs relative min-h-[220px] print:hidden"
                     data-html2canvas-ignore="true"
                   >
                     <img
