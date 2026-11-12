@@ -90,6 +90,74 @@ export function triggerPrintReport(): void {
   }
 }
 
+export interface ReportCompletenessCheckResult {
+  passed: boolean;
+  expectedKpiCount: number;
+  renderedKpiCount: number;
+  renderedAnalysisCount: number;
+  expectedMaintSitesCount: number;
+  renderedMaintSitesCount: number;
+  sectionsCount: number;
+  errors: string[];
+}
+
+/**
+ * Executive Report Quality Gate:
+ * Verifies that 100% of KPI rows, Services Analysis rows, Maintenance Site rows, and sequential sections
+ * are present in the rendered A4 pages before allowing PDF export.
+ */
+export function verifyReportDomCompleteness(container: HTMLElement): ReportCompletenessCheckResult {
+  const root = container.querySelector<HTMLElement>("#facilities-print-report-root") || container;
+  const expectedKpiCount = Number(root.getAttribute("data-expected-kpi-count") || 0);
+  const expectedMaintSitesCount = Number(root.getAttribute("data-expected-maint-count") || 0);
+
+  const renderedKpiCount = container.querySelectorAll('tr[data-kpi-row="true"]').length;
+  const renderedAnalysisCount = container.querySelectorAll('tr[data-service-analysis-row="true"]').length;
+  const renderedMaintGroupA = container.querySelectorAll('tr[data-maint-group-a-row="true"]').length;
+  const renderedMaintGroupB = container.querySelectorAll('tr[data-maint-group-b-row="true"]').length;
+
+  const sectionEls = Array.from(container.querySelectorAll<HTMLElement>("[data-section-number]"));
+  const uniqueSections = new Set(sectionEls.map(el => Number(el.getAttribute("data-section-number"))));
+
+  const errors: string[] = [];
+
+  if (expectedKpiCount > 0 && renderedKpiCount !== expectedKpiCount) {
+    errors.push(
+      `عدم تطابق عدد المؤشرات في جدول مؤشرات الأداء التشغيلية: المصدّر (${renderedKpiCount}) بينما المصدر (${expectedKpiCount}).`
+    );
+  }
+
+  if (expectedKpiCount > 0 && renderedAnalysisCount !== expectedKpiCount) {
+    errors.push(
+      `عدم تطابق عدد الخدمات في جدول تحليل أداء الخدمات التشغيلية: المصدّر (${renderedAnalysisCount}) بينما المصدر (${expectedKpiCount}).`
+    );
+  }
+
+  if (
+    expectedMaintSitesCount > 0 &&
+    (renderedMaintGroupA !== expectedMaintSitesCount || renderedMaintGroupB !== expectedMaintSitesCount)
+  ) {
+    errors.push(
+      `نقص في صفوف جدول تفاصيل الصيانة بالمقرات: المصدّر (${renderedMaintGroupA}/${renderedMaintGroupB}) بينما المصدر (${expectedMaintSitesCount}).`
+    );
+  }
+
+  if (uniqueSections.size < 12) {
+    errors.push(`نقص في الأقسام الرسمية للتقرير: تم العثور على (${uniqueSections.size}) قسم من أصل 12 قسماً إلزامياً.`);
+  }
+
+  return {
+    passed: errors.length === 0,
+    expectedKpiCount,
+    renderedKpiCount,
+    renderedAnalysisCount,
+    expectedMaintSitesCount,
+    renderedMaintSitesCount: Math.min(renderedMaintGroupA, renderedMaintGroupB),
+    sectionsCount: uniqueSections.size,
+    errors,
+  };
+}
+
 /**
  * Enterprise Page-by-Page A4 Portrait PDF Engine
  * Renders each discrete `.a4-report-page` (210mm x 297mm) individually onto an exact A4 PDF page
@@ -118,6 +186,14 @@ export async function exportA4PagesToPDF(
 
     if (pageElements.length === 0) {
       return await exportReportToPDF(container, finalFilename, onProgress);
+    }
+
+    // Run mandatory pre-export completeness quality gate
+    const completeness = verifyReportDomCompleteness(container);
+    if (!completeness.passed) {
+      console.error("Executive Report Quality Gate Failed:", completeness.errors);
+      if (onProgress) onProgress(false);
+      return false;
     }
 
     // Initialize an A4 Portrait jsPDF instance via html2pdf worker

@@ -32,7 +32,7 @@ export function ApprovedReportPreviewModal({ report, onClose, onOpenAuditTrail }
   const [isExportingExcel, setIsExportingExcel] = useState(false);
   const [viewMode, setViewMode] = useState<"all" | "single">("all");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const totalPages = 3;
+  const [totalPages, setTotalPages] = useState<number>(4);
 
   const exportData: MonthlyReportExportData = {
     ...report,
@@ -115,7 +115,7 @@ export function ApprovedReportPreviewModal({ report, onClose, onOpenAuditTrail }
           </button>
 
           <div className="flex items-center gap-1 px-1">
-            {[1, 2, 3].map(p => (
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
               <button
                 key={p}
                 type="button"
@@ -202,6 +202,7 @@ export function ApprovedReportPreviewModal({ report, onClose, onOpenAuditTrail }
           <FacilitiesMonthlyReportPrint
             data={exportData}
             activePageFilter={viewMode === "single" ? currentPage : null}
+            onTotalPagesComputed={count => setTotalPages(count)}
           />
         </div>
       </div>
